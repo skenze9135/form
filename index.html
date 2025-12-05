@@ -4,667 +4,408 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration Portal</title>
+    <title>WiFi Security Scanner - Adayanta IoT Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* 7-color gradient animation background */
-        @keyframes gradientAnimation {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            20% {
-                background-position: 25% 50%;
-            }
-
-            40% {
-                background-position: 50% 50%;
-            }
-
-            60% {
-                background-position: 75% 50%;
-            }
-
-            80% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        body {
-            background: linear-gradient(135deg,
-                    #667eea,
-                    /* Purple */
-                    #764ba2,
-                    /* Violet */
-                    #f093fb,
-                    /* Pink */
-                    #f5576c,
-                    /* Red */
-                    #fda085,
-                    /* Orange */
-                    #ffd89b,
-                    /* Yellow */
-                    #a8edea
-                    /* Cyan */
-                );
-            background-size: 400% 400%;
-            animation: gradientAnimation 15s ease infinite;
-            min-height: 100vh;
-        }
-
-        /* Glass morphism effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        /* Button animations */
-        .btn-animate {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            z-index: 1;
-        }
-
-        .btn-animate::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-            z-index: -1;
-        }
-
-        .btn-animate:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn-animate:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-animate:active {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Input field animations */
-        .input-field {
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
-        }
-
-        .input-field:focus {
-            border-bottom-color: #667eea;
-            transform: translateY(-2px);
-        }
-
-        /* Student card animation */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .student-card {
-            animation: slideIn 0.5s ease;
-        }
-
-        .student-card:hover {
-            transform: scale(1.02);
-            transition: transform 0.3s ease;
-        }
-
-        /* Floating animation for icons */
-        @keyframes float {
+        @keyframes pulse {
 
             0%,
             100% {
-                transform: translateY(0px);
+                opacity: 1;
             }
 
             50% {
-                transform: translateY(-10px);
+                opacity: 0.5;
             }
         }
 
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        /* Pulse animation for badge */
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
             }
 
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
         }
 
-        .pulse-animation {
-            animation: pulse 2s ease-in-out infinite;
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
         }
 
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid white;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
+        .security-open {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+        .security-wep {
+            background: linear-gradient(135deg, #fb923c, #ea580c);
         }
 
-        /* Success checkmark animation */
-        @keyframes checkmark {
-            0% {
-                stroke-dashoffset: 50;
-            }
-
-            100% {
-                stroke-dashoffset: 0;
-            }
+        .security-wpa {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
         }
 
-        .checkmark {
-            stroke-dasharray: 50;
-            stroke-dashoffset: 50;
-            animation: checkmark 0.5s ease-out forwards;
+        .security-wpa2 {
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        .security-wpa3 {
+            background: linear-gradient(135deg, #22d3ee, #06b6d4);
+        }
+
+        .security-unknown {
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
         }
     </style>
 </head>
 
-<body class="font-sans">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="inline-block">
-                <h1 class="text-5xl font-bold text-white mb-2 float-animation">
-                    📚 Student Registration Portal
-                </h1>
-                <p class="text-white/90 text-lg">Register now and join our academic community!</p>
-            </div>
-        </div>
-
-        <!-- Registration Form -->
-        <div class="max-w-2xl mx-auto mb-12">
-            <div class="glass rounded-2xl p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Registration Form</h2>
-                    <span
-                        class="badge pulse-animation bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm">
-                        New Student
-                    </span>
-                </div>
-
-                <form id="registrationForm" class="space-y-6">
-                    <!-- Personal Information Section -->
-                    <div class="border-l-4 border-purple-500 pl-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Personal Information</h3>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="firstName">
-                                    First Name <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="firstName" name="firstName" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="John">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="lastName">
-                                    Last Name <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="lastName" name="lastName" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="Doe">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
-                                    Email Address <span class="text-red-500">*</span>
-                                </label>
-                                <input type="email" id="email" name="email" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="john.doe@email.com">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
-                                    Phone Number <span class="text-red-500">*</span>
-                                </label>
-                                <input type="tel" id="phone" name="phone" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="+1 234 567 8900">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="dob">
-                                    Date of Birth <span class="text-red-500">*</span>
-                                </label>
-                                <input type="date" id="dob" name="dob" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="gender">
-                                    Gender <span class="text-red-500">*</span>
-                                </label>
-                                <select id="gender" name="gender" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Academic Information Section -->
-                    <div class="border-l-4 border-blue-500 pl-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Academic Information</h3>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="studentId">
-                                    Student ID <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="studentId" name="studentId" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    placeholder="STU2024001">
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="course">
-                                    Course <span class="text-red-500">*</span>
-                                </label>
-                                <select id="course" name="course" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="">Select Course</option>
-                                    <option value="Computer Science">Computer Science</option>
-                                    <option value="Business Administration">Business Administration</option>
-                                    <option value="Engineering">Engineering</option>
-                                    <option value="Medicine">Medicine</option>
-                                    <option value="Arts">Arts</option>
-                                    <option value="Law">Law</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="year">
-                                    Year <span class="text-red-500">*</span>
-                                </label>
-                                <select id="year" name="year" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="">Select Year</option>
-                                    <option value="1st Year">1st Year</option>
-                                    <option value="2nd Year">2nd Year</option>
-                                    <option value="3rd Year">3rd Year</option>
-                                    <option value="4th Year">4th Year</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="semester">
-                                    Semester <span class="text-red-500">*</span>
-                                </label>
-                                <select id="semester" name="semester" required
-                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                    <option value="">Select Semester</option>
-                                    <option value="Fall">Fall</option>
-                                    <option value="Spring">Spring</option>
-                                    <option value="Summer">Summer</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Address Information -->
-                    <div class="border-l-4 border-green-500 pl-4">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Address Information</h3>
-
-                        <div>
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="address">
-                                Full Address <span class="text-red-500">*</span>
-                            </label>
-                            <textarea id="address" name="address" required rows="3"
-                                class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                placeholder="123 Main St, Apartment 4B, City, State, ZIP"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Terms and Conditions -->
-                    <div class="flex items-start">
-                        <input type="checkbox" id="terms" name="terms" required class="mt-1 mr-2">
-                        <label for="terms" class="text-sm text-gray-700">
-                            I agree to the <a href="#" class="text-purple-600 hover:text-purple-800 underline">terms and
-                                conditions</a>
-                            and confirm that all information provided is accurate.
-                        </label>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex gap-4 justify-center pt-4">
-                        <button type="submit"
-                            class="btn-animate bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
-                            <span id="submitText">Submit Registration</span>
-                            <span id="submitLoader" class="hidden">
-                                <div class="spinner inline-block ml-2"></div>
-                            </span>
-                        </button>
-
-                        <button type="reset"
-                            class="btn-animate bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300">
-                            Reset Form
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Registered Students Section -->
-        <div class="max-w-6xl mx-auto">
-            <div class="glass rounded-2xl p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Registered Students</h2>
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600">Total Students:</span>
-                        <span id="studentCount"
-                            class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold">0</span>
-                    </div>
-                </div>
-
-                <div id="studentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="text-center py-12 col-span-full">
-                        <svg class="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-xl bg-opacity-90">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
                             </path>
                         </svg>
-                        <p class="text-gray-500">No students registered yet. Be the first to register!</p>
                     </div>
+                    <div>
+                        <h1
+                            class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
+                            Adayanta WiFi Security Scanner
+                        </h1>
+                        <p class="text-sm text-gray-400">ESP32 IoT Kit Network Monitor</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="connectionStatus" class="flex items-center space-x-2">
+                        <div id="statusDot" class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                        <span id="statusText" class="text-sm text-gray-400">Waiting for ESP32...</span>
+                    </div>
+                    <button onclick="clearData()"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                        Clear Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-400 text-sm">Total Networks</span>
+                    <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div id="totalNetworks" class="text-3xl font-bold">0</div>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-400 text-sm">Open Networks</span>
+                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                        </path>
+                    </svg>
+                </div>
+                <div id="openNetworks" class="text-3xl font-bold text-red-400">0</div>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-400 text-sm">Secure Networks</span>
+                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                        </path>
+                    </svg>
+                </div>
+                <div id="secureNetworks" class="text-3xl font-bold text-green-400">0</div>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-gray-400 text-sm">Last Scan</span>
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div id="lastScan" class="text-sm">Never</div>
+            </div>
+        </div>
+
+        <!-- Network List -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
+                </svg>
+                Detected Networks
+            </h2>
+
+            <div id="networkList" class="space-y-3">
+                <div class="text-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
+                        </path>
+                    </svg>
+                    <p>No WiFi networks detected yet</p>
+                    <p class="text-sm mt-2">Waiting for ESP32 to send scan data...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Success Modal -->
-        <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-            <div class="glass rounded-2xl p-8 max-w-md mx-4 transform transition-all">
-                <div class="text-center">
-                    <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path class="checkmark" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                            d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
-                    <p class="text-gray-600 mb-6">Your registration has been completed successfully.</p>
-                    <button onclick="closeModal()"
-                        class="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-2 px-6 rounded-lg hover:from-green-600 hover:to-green-700">
-                        Close
-                    </button>
-                </div>
+        <!-- Raw Data Log -->
+        <div class="mt-8 bg-gray-900 border border-gray-800 rounded-xl p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+                Raw Data Log
+            </h2>
+            <div id="rawDataLog" class="bg-black rounded-lg p-4 font-mono text-xs text-green-400 h-48 overflow-y-auto">
+                <div class="text-gray-500">Waiting for incoming data...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Endpoint Info -->
+    <div class="container mx-auto px-4 pb-8">
+        <div class="bg-blue-900 bg-opacity-30 border border-blue-800 rounded-xl p-6">
+            <h3 class="text-lg font-semibold mb-2 text-blue-300">📡 ESP32 Configuration</h3>
+            <p class="text-sm text-gray-300 mb-3">Configure your ESP32 to send data to this endpoint:</p>
+            <div class="bg-black rounded-lg p-3 font-mono text-sm">
+                <span class="text-green-400">POST</span>
+                <span class="text-yellow-400" id="apiEndpoint"></span>
+            </div>
+            <div class="mt-4 text-xs text-gray-400">
+                <p>Expected JSON format:</p>
+                <pre class="bg-black rounded-lg p-3 mt-2 overflow-x-auto">
+{
+  "networks": [
+    {
+      "ssid": "NetworkName",
+      "security": "WPA2",
+      "rating": "S",
+      "rssi": -65
+    }
+  ]
+}</pre>
             </div>
         </div>
     </div>
 
     <script>
-        // Store registered students
-        let students = [];
+        // Store all received data
+        let allScans = [];
 
-        // Form submission handler
-        document.getElementById('registrationForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Update API endpoint display
+        document.getElementById('apiEndpoint').textContent = window.location.origin + '/api/wifi_report';
 
-            // Show loading state
-            const submitText = document.getElementById('submitText');
-            const submitLoader = document.getElementById('submitLoader');
-            submitText.textContent = 'Processing...';
-            submitLoader.classList.remove('hidden');
+        // Security color mapping
+        const securityColors = {
+            'OPEN': 'security-open',
+            'WEP': 'security-wep',
+            'WPA': 'security-wpa',
+            'WPA2': 'security-wpa2',
+            'WPA3': 'security-wpa3',
+            'UNK': 'security-unknown'
+        };
 
-            // Simulate processing delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        // Rating descriptions
+        const ratingDescriptions = {
+            'D!': 'Dangerous - No encryption',
+            'B': 'Bad - Weak encryption',
+            'W': 'Weak - Old encryption',
+            'S': 'Secure - Good encryption',
+            'ST': 'Strong - Best encryption',
+            'U': 'Unknown security level'
+        };
 
-            // Get form data
-            const formData = new FormData(this);
-            const student = {
-                id: Date.now(),
-                firstName: formData.get('firstName'),
-                lastName: formData.get('lastName'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                dob: formData.get('dob'),
-                gender: formData.get('gender'),
-                studentId: formData.get('studentId'),
-                course: formData.get('course'),
-                year: formData.get('year'),
-                semester: formData.get('semester'),
-                address: formData.get('address'),
-                registrationDate: new Date().toLocaleDateString()
+        // Signal strength indicator
+        function getSignalStrength(rssi) {
+            if (rssi >= -50) return { bars: 4, quality: 'Excellent' };
+            if (rssi >= -60) return { bars: 3, quality: 'Good' };
+            if (rssi >= -70) return { bars: 2, quality: 'Fair' };
+            if (rssi >= -80) return { bars: 1, quality: 'Weak' };
+            return { bars: 0, quality: 'Very Weak' };
+        }
+
+        // Create signal bars SVG
+        function createSignalBars(bars) {
+            let svg = '<svg class="w-5 h-5" viewBox="0 0 24 24">';
+            for (let i = 0; i < 4; i++) {
+                const opacity = i < bars ? '1' : '0.3';
+                const height = 6 + (i * 3);
+                const y = 18 - height;
+                svg += `<rect x="${5 + i * 4}" y="${y}" width="3" height="${height}" fill="currentColor" opacity="${opacity}"/>`;
+            }
+            svg += '</svg>';
+            return svg;
+        }
+
+        // Process incoming data
+        function processWiFiData(data) {
+            const timestamp = new Date().toLocaleString();
+
+            // Update connection status
+            document.getElementById('statusDot').className = 'w-3 h-3 bg-green-500 rounded-full pulse';
+            document.getElementById('statusText').textContent = 'Connected';
+
+            // Store scan data
+            allScans.push({
+                timestamp: timestamp,
+                data: data
+            });
+
+            // Update statistics
+            const networks = data.networks || [];
+            document.getElementById('totalNetworks').textContent = networks.length;
+            document.getElementById('openNetworks').textContent = networks.filter(n => n.security === 'OPEN').length;
+            document.getElementById('secureNetworks').textContent = networks.filter(n => n.security !== 'OPEN').length;
+            document.getElementById('lastScan').textContent = timestamp;
+
+            // Update network list
+            const networkList = document.getElementById('networkList');
+            if (networks.length > 0) {
+                networkList.innerHTML = '';
+                networks.forEach((network, index) => {
+                    const signal = getSignalStrength(network.rssi);
+                    const securityClass = securityColors[network.security] || 'security-unknown';
+
+                    const networkCard = document.createElement('div');
+                    networkCard.className = `slide-in bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-cyan-600 transition-all`;
+                    networkCard.style.animationDelay = `${index * 0.1}s`;
+
+                    networkCard.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-gray-300 ${signal.bars > 2 ? 'text-green-400' : signal.bars > 0 ? 'text-yellow-400' : 'text-red-400'}">
+                                        ${createSignalBars(signal.bars)}
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-white">${network.ssid || 'Hidden Network'}</h3>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs px-2 py-1 rounded-full text-white ${securityClass}">
+                                                ${network.security}
+                                            </span>
+                                            <span class="text-xs text-gray-400">
+                                                ${ratingDescriptions[network.rating] || 'Unknown'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-gray-300">${network.rssi} dBm</div>
+                                <div class="text-xs text-gray-500">${signal.quality}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    networkList.appendChild(networkCard);
+                });
+            }
+
+            // Update raw data log
+            const rawLog = document.getElementById('rawDataLog');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'mb-2';
+            logEntry.innerHTML = `
+                <div class="text-cyan-400">[${timestamp}] Received scan data:</div>
+                <pre class="text-green-400 ml-4">${JSON.stringify(data, null, 2)}</pre>
+            `;
+            rawLog.insertBefore(logEntry, rawLog.firstChild);
+
+            // Limit log entries
+            while (rawLog.children.length > 10) {
+                rawLog.removeChild(rawLog.lastChild);
+            }
+        }
+
+        // Clear all data
+        function clearData() {
+            allScans = [];
+            document.getElementById('totalNetworks').textContent = '0';
+            document.getElementById('openNetworks').textContent = '0';
+            document.getElementById('secureNetworks').textContent = '0';
+            document.getElementById('lastScan').textContent = 'Never';
+            document.getElementById('networkList').innerHTML = `
+                <div class="text-center py-12 text-gray-500">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                    </svg>
+                    <p>No WiFi networks detected yet</p>
+                    <p class="text-sm mt-2">Waiting for ESP32 to send scan data...</p>
+                </div>
+            `;
+            document.getElementById('rawDataLog').innerHTML = '<div class="text-gray-500">Waiting for incoming data...</div>';
+            document.getElementById('statusDot').className = 'w-3 h-3 bg-gray-500 rounded-full';
+            document.getElementById('statusText').textContent = 'Waiting for ESP32...';
+        }
+
+        // Simulate API endpoint (for demo purposes)
+        // In production, you'd have a real backend server
+        window.receiveWiFiData = function (jsonData) {
+            try {
+                const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+                processWiFiData(data);
+            } catch (error) {
+                console.error('Error processing data:', error);
+                const rawLog = document.getElementById('rawDataLog');
+                const errorEntry = document.createElement('div');
+                errorEntry.className = 'text-red-400 mb-2';
+                errorEntry.textContent = `[${new Date().toLocaleString()}] Error: ${error.message}`;
+                rawLog.insertBefore(errorEntry, rawLog.firstChild);
+            }
+        };
+
+        // Test data for demonstration
+        setTimeout(() => {
+            const testData = {
+                "networks": [
+                    { "ssid": "HomeNetwork", "security": "WPA2", "rating": "S", "rssi": -45 },
+                    { "ssid": "Guest_WiFi", "security": "OPEN", "rating": "D!", "rssi": -62 },
+                    { "ssid": "Office_5G", "security": "WPA3", "rating": "ST", "rssi": -58 },
+                    { "ssid": "Neighbor_Net", "security": "WEP", "rating": "B", "rssi": -78 },
+                    { "ssid": "CoffeeShop", "security": "WPA", "rating": "W", "rssi": -71 }
+                ]
             };
 
-            // Add student to list
-            students.push(student);
+            // Uncomment to see demo data on load
+            // receiveWiFiData(testData);
+        }, 1000);
 
-            // Update display
-            updateStudentsList();
-
-            // Reset form
-            this.reset();
-
-            // Reset button state
-            submitText.textContent = 'Submit Registration';
-            submitLoader.classList.add('hidden');
-
-            // Show success modal
-            showSuccessModal();
-        });
-
-        // Update students list display
-        function updateStudentsList() {
-            const studentsList = document.getElementById('studentsList');
-            const studentCount = document.getElementById('studentCount');
-
-            if (students.length === 0) {
-                studentsList.innerHTML = `
-                    <div class="text-center py-12 col-span-full">
-                        <svg class="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
-                        <p class="text-gray-500">No students registered yet. Be the first to register!</p>
-                    </div>
-                `;
-            } else {
-                studentsList.innerHTML = students.map(student => `
-                    <div class="student-card bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                    ${student.firstName[0]}${student.lastName[0]}
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="font-semibold text-gray-800">${student.firstName} ${student.lastName}</h3>
-                                    <p class="text-sm text-gray-500">${student.studentId}</p>
-                                </div>
-                            </div>
-                            <button onclick="deleteStudent(${student.id})" class="text-red-500 hover:text-red-700 transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-2 text-sm">
-                            <div class="flex items-center text-gray-600">
-                                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                <span class="truncate">${student.email}</span>
-                            </div>
-                            
-                            <div class="flex items-center text-gray-600">
-                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
-                                </svg>
-                                <span>${student.course}</span>
-                            </div>
-                            
-                            <div class="flex items-center text-gray-600">
-                                <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <span>${student.year} - ${student.semester}</span>
-                            </div>
-                            
-                            <div class="flex items-center text-gray-600">
-                                <svg class="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                </svg>
-                                <span>${student.phone}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 pt-4 border-t border-gray-100">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs text-gray-500">Registered: ${student.registrationDate}</span>
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            studentCount.textContent = students.length;
+        // Listen for POST requests (you'll need a backend server for this)
+        // This is just a placeholder to show how it would work
+        if (typeof window !== 'undefined') {
+            // In a real implementation, you'd have a backend server
+            // that receives POST requests and forwards them to this page
+            console.log('WiFi Scanner Dashboard ready to receive data at:', window.location.origin + '/api/wifi_report');
         }
-
-        // Delete student
-        function deleteStudent(id) {
-            if (confirm('Are you sure you want to remove this student?')) {
-                students = students.filter(s => s.id !== id);
-                updateStudentsList();
-            }
-        }
-
-        // Show success modal
-        function showSuccessModal() {
-            const modal = document.getElementById('successModal');
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.classList.add('opacity-100');
-            }, 10);
-        }
-
-        // Close modal
-        function closeModal() {
-            const modal = document.getElementById('successModal');
-            modal.style.display = 'none';
-        }
-
-        // Add form field animations
-        document.querySelectorAll('input, select, textarea').forEach(field => {
-            field.addEventListener('focus', function () {
-                this.parentElement.classList.add('transform', 'scale-105');
-            });
-
-            field.addEventListener('blur', function () {
-                this.parentElement.classList.remove('transform', 'scale-105');
-            });
-        });
-
-        // Add interactive hover effects to buttons
-        document.querySelectorAll('button').forEach(button => {
-            button.addEventListener('mouseenter', function () {
-                this.style.transform = 'translateY(-2px)';
-            });
-
-            button.addEventListener('mouseleave', function () {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-
-        // Add real-time validation feedback
-        document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
-            field.addEventListener('blur', function () {
-                if (this.value.trim() === '') {
-                    this.classList.add('border-red-500');
-                    this.classList.remove('border-green-500');
-                } else {
-                    this.classList.add('border-green-500');
-                    this.classList.remove('border-red-500');
-                }
-            });
-        });
-
-        // Email validation
-        document.getElementById('email').addEventListener('input', function () {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (emailRegex.test(this.value)) {
-                this.classList.add('border-green-500');
-                this.classList.remove('border-red-500');
-            } else {
-                this.classList.add('border-red-500');
-                this.classList.remove('border-green-500');
-            }
-        });
-
-        // Phone number formatting
-        document.getElementById('phone').addEventListener('input', function () {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length > 0) {
-                if (value.length <= 3) {
-                    value = value;
-                } else if (value.length <= 6) {
-                    value = value.slice(0, 3) + ' ' + value.slice(3);
-                } else {
-                    value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6, 10);
-                }
-            }
-            this.value = value;
-        });
     </script>
 </body>
 
