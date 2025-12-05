@@ -193,7 +193,7 @@
 
     <!-- API Endpoint Info -->
     <div class="container mx-auto px-4 pb-8">
-        <div class="bg-blue-900 bg-opacity-30 border border-blue-800 rounded-xl p-6">
+        <div class="bg-blue-900 bg-opacity-30 border border-blue-800 rounded-xl p-6 mb-4">
             <h3 class="text-lg font-semibold mb-2 text-blue-300">📡 ESP32 Configuration</h3>
             <p class="text-sm text-gray-300 mb-3">Configure your ESP32 to send data to this endpoint:</p>
             <div class="bg-black rounded-lg p-3 font-mono text-sm">
@@ -213,6 +213,138 @@
     }
   ]
 }</pre>
+            </div>
+        </div>
+
+        <!-- WiFi Troubleshooting Guide -->
+        <div class="bg-red-900 bg-opacity-30 border border-red-800 rounded-xl p-6">
+            <h3 class="text-lg font-semibold mb-4 text-red-300">🔧 WiFi Connection Troubleshooting</h3>
+
+            <div class="space-y-4">
+                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Common WiFi Connection Fixes:</h4>
+                    <ol class="text-sm space-y-2 text-gray-300">
+                        <li>1. <span class="text-cyan-400">Check SSID & Password:</span> Make sure they're correct in
+                            your ESP32 code</li>
+                        <li>2. <span class="text-cyan-400">Signal Strength:</span> Move ESP32 closer to router (needs
+                            RSSI > -75 dBm)</li>
+                        <li>3. <span class="text-cyan-400">2.4GHz Only:</span> ESP32 doesn't support 5GHz networks</li>
+                        <li>4. <span class="text-cyan-400">Special Characters:</span> Avoid @ # $ % in WiFi password
+                        </li>
+                        <li>5. <span class="text-cyan-400">Hidden SSID:</span> Make network visible or use
+                            WiFi.begin(ssid, pass, channel, bssid)</li>
+                    </ol>
+                </div>
+
+                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Updated ESP32 Code (With Error Handling):</h4>
+                    <pre class="bg-black rounded-lg p-3 text-xs overflow-x-auto text-green-400">
+// Better WiFi connection with retry logic
+const char* WIFI_SSID = "YourHotspot";     // Must be 2.4GHz
+const char* WIFI_PASS = "YourPassword";    // Exact password
+const char* POST_URL  = "http://192.168.1.100/api/wifi_report"; // Use IP not HTTPS
+
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);  // Station mode
+  WiFi.disconnect();    // Clear old config
+  delay(100);
+  
+  lcd.clear();
+  lcd.print("Connecting WiFi");
+  
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  
+  int attempts = 0;
+  while(WiFi.status() != WL_CONNECTED && attempts < 30) {
+    delay(500);
+    lcd.setCursor(attempts % 16, 1);
+    lcd.print(".");
+    attempts++;
+    
+    // Show debug info
+    Serial.print(".");
+    Serial.print(" Status: ");
+    Serial.println(WiFi.status());
+  }
+  
+  if(WiFi.status() == WL_CONNECTED) {
+    lcd.clear();
+    lcd.print("WiFi OK!");
+    lcd.setCursor(0,1);
+    lcd.print(WiFi.localIP());
+    Serial.println("Connected! IP: " + WiFi.localIP().toString());
+  } else {
+    lcd.clear();
+    lcd.print("WiFi FAIL!");
+    lcd.setCursor(0,1);
+    
+    // Show error code
+    switch(WiFi.status()) {
+      case WL_NO_SSID_AVAIL:
+        lcd.print("SSID not found");
+        Serial.println("Error: SSID not found");
+        break;
+      case WL_CONNECT_FAILED:
+        lcd.print("Wrong password");
+        Serial.println("Error: Wrong password");
+        break;
+      case WL_CONNECTION_LOST:
+        lcd.print("Lost connection");
+        Serial.println("Error: Connection lost");
+        break;
+      default:
+        lcd.print("Error: " + String(WiFi.status()));
+        Serial.println("Error code: " + String(WiFi.status()));
+    }
+    
+    // Send error to website
+    sendError(WiFi.status());
+  }
+}
+
+void sendError(int errorCode) {
+  // If somehow connected, send error details
+  if(WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(POST_URL);
+    http.addHeader("Content-Type", "application/json");
+    
+    String json = "{\"error\":\"WiFi Error " + String(errorCode) + "\",";
+    json += "\"ssid\":\"" + String(WIFI_SSID) + "\"}";
+    
+    http.POST(json);
+    http.end();
+  }
+}</pre>
+                </div>
+
+                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-yellow-400 mb-2">Quick Test Commands (Serial Monitor):</h4>
+                    <pre class="bg-black rounded-lg p-3 text-xs overflow-x-auto text-cyan-400">
+// Add to your setup() for debugging:
+Serial.println("=== WiFi Debug Info ===");
+Serial.println("SSID: " + String(WIFI_SSID));
+Serial.println("Pass length: " + String(strlen(WIFI_PASS)));
+Serial.println("MAC: " + WiFi.macAddress());
+Serial.println("Scanning networks...");
+
+int n = WiFi.scanNetworks();
+for(int i = 0; i < n; i++) {
+  Serial.printf("%d: %s (%d dBm) %s\n", 
+    i+1, 
+    WiFi.SSID(i).c_str(), 
+    WiFi.RSSI(i),
+    WiFi.SSID(i) == String(WIFI_SSID) ? "← TARGET" : ""
+  );
+}</pre>
+                </div>
+
+                <div class="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3 mt-4">
+                    <p class="text-sm text-yellow-300">
+                        <strong>💡 Pro Tip:</strong> Use your phone's hotspot for testing! Name it "ESP32Test" with
+                        password "12345678" - much easier than home routers.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -269,6 +401,24 @@
         // Process incoming data
         function processWiFiData(data) {
             const timestamp = new Date().toLocaleString();
+
+            // Check for error in data
+            if (data.error) {
+                document.getElementById('statusDot').className = 'w-3 h-3 bg-red-500 rounded-full pulse';
+                document.getElementById('statusText').textContent = 'ESP32 WiFi Error';
+
+                // Show error in raw log
+                const rawLog = document.getElementById('rawDataLog');
+                const errorEntry = document.createElement('div');
+                errorEntry.className = 'text-red-400 mb-2';
+                errorEntry.innerHTML = `
+                    <div>[${timestamp}] WiFi Connection Failed:</div>
+                    <div class="ml-4">${data.error}</div>
+                    <div class="ml-4 text-yellow-400">Check: SSID="${data.ssid || 'Not Set'}" Password="${data.password ? '***' : 'Not Set'}"</div>
+                `;
+                rawLog.insertBefore(errorEntry, rawLog.firstChild);
+                return;
+            }
 
             // Update connection status
             document.getElementById('statusDot').className = 'w-3 h-3 bg-green-500 rounded-full pulse';
