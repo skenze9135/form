@@ -1,34 +1,65 @@
 <!DOCTYPE html>
-<!-- registration form -->
- <html lang="en">
- 
- <head>
-     <meta charset="UTF-8">
-     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Registration Form</title>
-     <link rel="stylesheet" href="styles.css">
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+
+    <!-- Link CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-        <div class="container">
-            <h2>Registration Form</h2>
-            <form action="/submit" method="post">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-    
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-    
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-    
-                <label for="confirm-password">Confirm Password:</label>
-                <input type="password" id="confirm-password" name="confirm-password" required>
-    
+
+    <div class="container">
+        <h2>Student Registration Form</h2>
+        <form>
+
+            <label>First Name</label>
+            <input type="text" required>
+
+            <label>Last Name</label>
+            <input type="text" required>
+
+            <label>Date of Birth</label>
+            <input type="date" required>
+
+            <label>Gender</label>
+            <select required>
+                <option value="">Select</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+            </select>
+
+            <label>Email</label>
+            <input type="email" required>
+
+            <label>Phone Number</label>
+            <input type="tel" required>
+
+            <label>Address</label>
+            <textarea rows="2" required></textarea>
+
+            <label>Course / Program</label>
+            <select required>
+                <option value="">Choose</option>
+                <option>BSc</option>
+                <option>BCA</option>
+                <option>BA English</option>
+                <option>MBA</option>
+                <option>MSc Computer Science</option>
+            </select>
+
+            <div class="btn-area">
                 <button type="submit">Register</button>
-            </form>
-        </div>
+                <button type="reset" class="reset-btn">Clear</button>
+            </div>
+
+        </form>
+    </div>
+
 </body>
 
 </html>
