@@ -1,115 +1,671 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration Form</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Student Registration Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* 7-color gradient animation background */
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            20% {
+                background-position: 25% 50%;
+            }
+
+            40% {
+                background-position: 50% 50%;
+            }
+
+            60% {
+                background-position: 75% 50%;
+            }
+
+            80% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        body {
+            background: linear-gradient(135deg,
+                    #667eea,
+                    /* Purple */
+                    #764ba2,
+                    /* Violet */
+                    #f093fb,
+                    /* Pink */
+                    #f5576c,
+                    /* Red */
+                    #fda085,
+                    /* Orange */
+                    #ffd89b,
+                    /* Yellow */
+                    #a8edea
+                    /* Cyan */
+                );
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* Button animations */
+        .btn-animate {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .btn-animate::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+
+        .btn-animate:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-animate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-animate:active {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Input field animations */
+        .input-field {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .input-field:focus {
+            border-bottom-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        /* Student card animation */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .student-card {
+            animation: slideIn 0.5s ease;
+        }
+
+        .student-card:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        /* Floating animation for icons */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Pulse animation for badge */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success checkmark animation */
+        @keyframes checkmark {
+            0% {
+                stroke-dashoffset: 50;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .checkmark {
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: checkmark 0.5s ease-out forwards;
+        }
+    </style>
 </head>
-<body>
 
-<div class="container">
-    <h2>Student Registration Form</h2>
-
-    <form id="studentForm">
-
-        <label>Student Name</label>
-        <input type="text" id="name" required>
-
-        <div class="row">
-            <div class="input-group">
-                <label>Mobile No.</label>
-                <input type="text" id="mobile" required>
-            </div>
-
-            <div class="input-group">
-                <label>Email Id</label>
-                <input type="email" id="email" required>
+<body class="font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-block">
+                <h1 class="text-5xl font-bold text-white mb-2 float-animation">
+                    📚 Student Registration Portal
+                </h1>
+                <p class="text-white/90 text-lg">Register now and join our academic community!</p>
             </div>
         </div>
 
-        <div class="row">
-            <div class="input-group">
-                <label>Father Name</label>
-                <input type="text" id="father">
+        <!-- Registration Form -->
+        <div class="max-w-2xl mx-auto mb-12">
+            <div class="glass rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Registration Form</h2>
+                    <span
+                        class="badge pulse-animation bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm">
+                        New Student
+                    </span>
+                </div>
+
+                <form id="registrationForm" class="space-y-6">
+                    <!-- Personal Information Section -->
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Personal Information</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="firstName">
+                                    First Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="firstName" name="firstName" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="John">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="lastName">
+                                    Last Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="lastName" name="lastName" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="Doe">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                                    Email Address <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" id="email" name="email" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="john.doe@email.com">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
+                                    Phone Number <span class="text-red-500">*</span>
+                                </label>
+                                <input type="tel" id="phone" name="phone" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="+1 234 567 8900">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="dob">
+                                    Date of Birth <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="dob" name="dob" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="gender">
+                                    Gender <span class="text-red-500">*</span>
+                                </label>
+                                <select id="gender" name="gender" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Academic Information Section -->
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Academic Information</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="studentId">
+                                    Student ID <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="studentId" name="studentId" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    placeholder="STU2024001">
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="course">
+                                    Course <span class="text-red-500">*</span>
+                                </label>
+                                <select id="course" name="course" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select Course</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Business Administration">Business Administration</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Medicine">Medicine</option>
+                                    <option value="Arts">Arts</option>
+                                    <option value="Law">Law</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="year">
+                                    Year <span class="text-red-500">*</span>
+                                </label>
+                                <select id="year" name="year" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select Year</option>
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="semester">
+                                    Semester <span class="text-red-500">*</span>
+                                </label>
+                                <select id="semester" name="semester" required
+                                    class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">Select Semester</option>
+                                    <option value="Fall">Fall</option>
+                                    <option value="Spring">Spring</option>
+                                    <option value="Summer">Summer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Address Information</h3>
+
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="address">
+                                Full Address <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="address" name="address" required rows="3"
+                                class="input-field w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="123 Main St, Apartment 4B, City, State, ZIP"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="flex items-start">
+                        <input type="checkbox" id="terms" name="terms" required class="mt-1 mr-2">
+                        <label for="terms" class="text-sm text-gray-700">
+                            I agree to the <a href="#" class="text-purple-600 hover:text-purple-800 underline">terms and
+                                conditions</a>
+                            and confirm that all information provided is accurate.
+                        </label>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-4 justify-center pt-4">
+                        <button type="submit"
+                            class="btn-animate bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
+                            <span id="submitText">Submit Registration</span>
+                            <span id="submitLoader" class="hidden">
+                                <div class="spinner inline-block ml-2"></div>
+                            </span>
+                        </button>
+
+                        <button type="reset"
+                            class="btn-animate bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-3 px-8 rounded-lg hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                            Reset Form
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Mother Name</label>
-                <input type="text" id="mother">
+        <!-- Registered Students Section -->
+        <div class="max-w-6xl mx-auto">
+            <div class="glass rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Registered Students</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Total Students:</span>
+                        <span id="studentCount"
+                            class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold">0</span>
+                    </div>
+                </div>
+
+                <div id="studentsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="text-center py-12 col-span-full">
+                        <svg class="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                            </path>
+                        </svg>
+                        <p class="text-gray-500">No students registered yet. Be the first to register!</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <label>Gender</label>
-        <div class="radio-row">
-            <label class="radio-group"><input type="radio" name="gender" value="Male"> Male</label>
-            <label class="radio-group"><input type="radio" name="gender" value="Female"> Female</label>
+        <!-- Success Modal -->
+        <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="glass rounded-2xl p-8 max-w-md mx-4 transform transition-all">
+                <div class="text-center">
+                    <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path class="checkmark" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                            d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
+                    <p class="text-gray-600 mb-6">Your registration has been completed successfully.</p>
+                    <button onclick="closeModal()"
+                        class="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-2 px-6 rounded-lg hover:from-green-600 hover:to-green-700">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <label>Select Branch</label>
-        <div class="radio-row">
-            <label class="radio-group"><input type="checkbox" value="CSE" class="branch"> CSE</label>
-            <label class="radio-group"><input type="checkbox" value="IT" class="branch"> IT</label>
-            <label class="radio-group"><input type="checkbox" value="ECE" class="branch"> ECE</label>
-            <label class="radio-group"><input type="checkbox" value="Civil" class="branch"> Civil</label>
-        </div>
+    <script>
+        // Store registered students
+        let students = [];
 
-        <label>Student Photo</label>
-        <input type="file" id="photo" accept="image/*">
+        // Form submission handler
+        document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        <label>Address</label>
-        <textarea id="address"></textarea>
+            // Show loading state
+            const submitText = document.getElementById('submitText');
+            const submitLoader = document.getElementById('submitLoader');
+            submitText.textContent = 'Processing...';
+            submitLoader.classList.remove('hidden');
 
-        <button type="submit" class="submit-btn">Submit</button>
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-    </form>
-</div>
+            // Get form data
+            const formData = new FormData(this);
+            const student = {
+                id: Date.now(),
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                dob: formData.get('dob'),
+                gender: formData.get('gender'),
+                studentId: formData.get('studentId'),
+                course: formData.get('course'),
+                year: formData.get('year'),
+                semester: formData.get('semester'),
+                address: formData.get('address'),
+                registrationDate: new Date().toLocaleDateString()
+            };
 
-<div class="container" id="displayDiv" style="display:none;">
-    <h2>Registered Student Details</h2>
-    <img id="displayPhoto" width="120" style="border-radius:10px;"><br><br>
-    <p><b>Name:</b> <span id="d_name"></span></p>
-    <p><b>Mobile:</b> <span id="d_mobile"></span></p>
-    <p><b>Email:</b> <span id="d_email"></span></p>
-    <p><b>Father:</b> <span id="d_father"></span></p>
-    <p><b>Mother:</b> <span id="d_mother"></span></p>
-    <p><b>Course:</b> <span id="d_course"></span></p>
-    <p><b>DOB:</b> <span id="d_dob"></span></p>
-    <p><b>Gender:</b> <span id="d_gender"></span></p>
-    <p><b>Branch:</b> <span id="d_branch"></span></p>
-    <p><b>Address:</b> <span id="d_address"></span></p>
-</div>
+            // Add student to list
+            students.push(student);
 
-<script>
-document.getElementById("studentForm").addEventListener("submit", function(e){
-    e.preventDefault();
+            // Update display
+            updateStudentsList();
 
-    document.getElementById("d_name").innerText = document.getElementById("name").value;
-    document.getElementById("d_mobile").innerText = document.getElementById("mobile").value;
-    document.getElementById("d_email").innerText = document.getElementById("email").value;
-    document.getElementById("d_father").innerText = document.getElementById("father").value;
-    document.getElementById("d_mother").innerText = document.getElementById("mother").value;
-    document.getElementById("d_course").innerText = document.getElementById("course").value;
-    document.getElementById("d_dob").innerText = document.getElementById("dob").value;
+            // Reset form
+            this.reset();
 
-    const gender = document.querySelector('input[name="gender"]:checked');
-    document.getElementById("d_gender").innerText = gender ? gender.value : "Not selected";
+            // Reset button state
+            submitText.textContent = 'Submit Registration';
+            submitLoader.classList.add('hidden');
 
-    const branches = document.querySelectorAll(".branch:checked");
-    let selectedBranch = [];
-    branches.forEach(b => selectedBranch.push(b.value));
-    document.getElementById("d_branch").innerText = selectedBranch.join(", ");
+            // Show success modal
+            showSuccessModal();
+        });
 
-    const photo = document.getElementById("photo").files[0];
-    if(photo){
-        document.getElementById("displayPhoto").src = URL.createObjectURL(photo);
-    }
+        // Update students list display
+        function updateStudentsList() {
+            const studentsList = document.getElementById('studentsList');
+            const studentCount = document.getElementById('studentCount');
 
-    document.getElementById("d_address").innerText = document.getElementById("address").value;
+            if (students.length === 0) {
+                studentsList.innerHTML = `
+                    <div class="text-center py-12 col-span-full">
+                        <svg class="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <p class="text-gray-500">No students registered yet. Be the first to register!</p>
+                    </div>
+                `;
+            } else {
+                studentsList.innerHTML = students.map(student => `
+                    <div class="student-card bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                    ${student.firstName[0]}${student.lastName[0]}
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="font-semibold text-gray-800">${student.firstName} ${student.lastName}</h3>
+                                    <p class="text-sm text-gray-500">${student.studentId}</p>
+                                </div>
+                            </div>
+                            <button onclick="deleteStudent(${student.id})" class="text-red-500 hover:text-red-700 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                <span class="truncate">${student.email}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                                </svg>
+                                <span>${student.course}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>${student.year} - ${student.semester}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                </svg>
+                                <span>${student.phone}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-500">Registered: ${student.registrationDate}</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
 
-    document.getElementById("displayDiv").style.display = "block";
-});
-</script>
+            studentCount.textContent = students.length;
+        }
 
+        // Delete student
+        function deleteStudent(id) {
+            if (confirm('Are you sure you want to remove this student?')) {
+                students = students.filter(s => s.id !== id);
+                updateStudentsList();
+            }
+        }
+
+        // Show success modal
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+            }, 10);
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'none';
+        }
+
+        // Add form field animations
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('focus', function () {
+                this.parentElement.classList.add('transform', 'scale-105');
+            });
+
+            field.addEventListener('blur', function () {
+                this.parentElement.classList.remove('transform', 'scale-105');
+            });
+        });
+
+        // Add interactive hover effects to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseenter', function () {
+                this.style.transform = 'translateY(-2px)';
+            });
+
+            button.addEventListener('mouseleave', function () {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Add real-time validation feedback
+        document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+            field.addEventListener('blur', function () {
+                if (this.value.trim() === '') {
+                    this.classList.add('border-red-500');
+                    this.classList.remove('border-green-500');
+                } else {
+                    this.classList.add('border-green-500');
+                    this.classList.remove('border-red-500');
+                }
+            });
+        });
+
+        // Email validation
+        document.getElementById('email').addEventListener('input', function () {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(this.value)) {
+                this.classList.add('border-green-500');
+                this.classList.remove('border-red-500');
+            } else {
+                this.classList.add('border-red-500');
+                this.classList.remove('border-green-500');
+            }
+        });
+
+        // Phone number formatting
+        document.getElementById('phone').addEventListener('input', function () {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + ' ' + value.slice(3);
+                } else {
+                    value = value.slice(0, 3) + ' ' + value.slice(3, 6) + ' ' + value.slice(6, 10);
+                }
+            }
+            this.value = value;
+        });
+    </script>
 </body>
+
 </html>
