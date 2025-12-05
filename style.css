@@ -1,65 +1,112 @@
+/* Background gradient animation */
 body {
-    font-family: Arial;
-    background: #f2f7ff;
     margin: 0;
     padding: 0;
+    font-family: Arial;
+    background: linear-gradient(45deg, #0059ff, #00eaff, #002fff);
+    background-size: 400% 400%;
+    animation: backgroundMove 10s infinite alternate;
 }
 
+@keyframes backgroundMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Form Container */
 .container {
     width: 50%;
-    background: white;
-    margin: 50px auto;
-    padding: 25px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.20);
+    margin: 60px auto;
+    padding: 30px;
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    animation: fadeIn 1.3s ease;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
-h2 {
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Title */
+.title {
     text-align: center;
+    color: white;
+    font-size: 28px;
     margin-bottom: 20px;
+    text-shadow: 0 0 8px white;
 }
 
+/* Form Inputs */
 label {
+    color: white;
     font-weight: bold;
     display: block;
-    margin: 8px 0 5px;
+    margin: 8px 0 4px;
 }
 
 input,
 select,
 textarea {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #999;
-    border-radius: 5px;
-    font-size: 15px;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.65);
+    transition: 0.3s;
 }
 
-textarea {
-    resize: none;
+/* Glow Animation on Focus */
+input:focus,
+select:focus,
+textarea:focus {
+    background: white;
+    box-shadow: 0 0 10px #00ddff, 0 0 20px #00ddff;
 }
 
+/* Buttons */
 .btn-area {
-    margin-top: 20px;
     display: flex;
     justify-content: space-between;
+    margin-top: 20px;
 }
 
-button {
+.btn {
     width: 48%;
-    padding: 10px;
-    font-size: 16px;
+    padding: 12px;
     border: none;
-    color: white;
-    background: #007bff;
+    font-size: 17px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 6px;
+    color: white;
+    transition: 0.3s;
 }
 
-button:hover {
-    background: #0056b3;
+.submit {
+    background: #0078ff;
 }
 
-.reset-btn {
-    background: gray;
+.reset {
+    background: #ff0048;
+}
+
+/* Button Hover Animation */
+.btn:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 12px white;
 }
