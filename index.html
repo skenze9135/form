@@ -4,61 +4,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animated Student Registration Form</title>
-
-    <!-- Link CSS -->
+    <title>Student Registration Form</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <div class="container">
-        <h2 class="title">🎓 Student Registration Form</h2>
-        <form>
+        <h2>Student Registration Form</h2>
 
-            <label>First Name</label>
-            <input type="text" required>
+        <form id="studentForm">
 
-            <label>Last Name</label>
-            <input type="text" required>
+            <label>Student Name</label>
+            <input type="text" id="name" required>
 
-            <label>Date of Birth</label>
-            <input type="date" required>
+            <div class="row">
+                <div class="input-group">
+                    <label>Mobile No.</label>
+                    <input type="text" id="mobile" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Email Id</label>
+                    <input type="email" id="email" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Father Name</label>
+                    <input type="text" id="father">
+                </div>
+
+                <div class="input-group">
+                    <label>Mother Name</label>
+                    <input type="text" id="mother">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Select Course</label>
+                    <select id="course">
+                        <option>Select...</option>
+                        <option>BSc</option>
+                        <option>BCA</option>
+                        <option>B.Tech</option>
+                        <option>MBA</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Date Of Birth</label>
+                    <input type="date" id="dob">
+                </div>
+            </div>
 
             <label>Gender</label>
-            <select required>
-                <option value="">Select</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-            </select>
+            <input type="radio" name="gender" value="Male"> Male
+            <input type="radio" name="gender" value="Female"> Female
+            <br><br>
 
-            <label>Email</label>
-            <input type="email" required>
+            <label>Select Branch</label><br>
+            <input type="checkbox" value="CSE" class="branch"> CSE
+            <input type="checkbox" value="IT" class="branch"> IT
+            <input type="checkbox" value="ECE" class="branch"> ECE
+            <input type="checkbox" value="Civil" class="branch"> Civil
+            <br><br>
 
-            <label>Phone Number</label>
-            <input type="tel" required>
+            <label>Student Photo</label>
+            <input type="file" id="photo" accept="image/*">
 
             <label>Address</label>
-            <textarea rows="2" required></textarea>
+            <textarea id="address"></textarea>
 
-            <label>Course / Program</label>
-            <select required>
-                <option value="">Choose</option>
-                <option>BSc</option>
-                <option>BCA</option>
-                <option>BA English</option>
-                <option>MBA</option>
-                <option>MSc Computer Science</option>
-            </select>
-
-            <div class="btn-area">
-                <button type="submit" class="btn submit">Register</button>
-                <button type="reset" class="btn reset">Clear</button>
-            </div>
+            <button type="submit" class="submit-btn">Submit</button>
 
         </form>
     </div>
+
+    <!-- Registered Student Display Section -->
+    <div class="container" id="displayDiv" style="display:none;">
+        <h2>Registered Student Details</h2>
+        <img id="displayPhoto" width="120" style="border-radius:10px;"><br><br>
+        <p><b>Name:</b> <span id="d_name"></span></p>
+        <p><b>Mobile:</b> <span id="d_mobile"></span></p>
+        <p><b>Email:</b> <span id="d_email"></span></p>
+        <p><b>Father:</b> <span id="d_father"></span></p>
+        <p><b>Mother:</b> <span id="d_mother"></span></p>
+        <p><b>Course:</b> <span id="d_course"></span></p>
+        <p><b>DOB:</b> <span id="d_dob"></span></p>
+        <p><b>Gender:</b> <span id="d_gender"></span></p>
+        <p><b>Branch:</b> <span id="d_branch"></span></p>
+        <p><b>Address:</b> <span id="d_address"></span></p>
+    </div>
+
+    <script>
+        document.getElementById("studentForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            document.getElementById("d_name").innerText = document.getElementById("name").value;
+            document.getElementById("d_mobile").innerText = document.getElementById("mobile").value;
+            document.getElementById("d_email").innerText = document.getElementById("email").value;
+            document.getElementById("d_father").innerText = document.getElementById("father").value;
+            document.getElementById("d_mother").innerText = document.getElementById("mother").value;
+            document.getElementById("d_course").innerText = document.getElementById("course").value;
+            document.getElementById("d_dob").innerText = document.getElementById("dob").value;
+            document.getElementById("d_address").innerText = document.getElementById("address").value;
+
+            // Gender
+            const gender = document.querySelector('input[name="gender"]:checked');
+            document.getElementById("d_gender").innerText = gender ? gender.value : "Not selected";
+
+            // Branch Multiple
+            const branches = document.querySelectorAll(".branch:checked");
+            let selectedBranch = [];
+            branches.forEach(b => selectedBranch.push(b.value));
+            document.getElementById("d_branch").innerText = selectedBranch.join(", ");
+
+            // Photo Preview
+            const photo = document.getElementById("photo").files[0];
+            if (photo) {
+                document.getElementById("displayPhoto").src = URL.createObjectURL(photo);
+            }
+
+            document.getElementById("displayDiv").style.display = "block";
+        });
+    </script>
 
 </body>
 
