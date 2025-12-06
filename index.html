@@ -2,561 +2,175 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiFi Security Scanner - Adayanta IoT Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP32 WiFi Scanner Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        @keyframes pulse {
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        .security-open {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-
-        .security-wep {
-            background: linear-gradient(135deg, #fb923c, #ea580c);
-        }
-
-        .security-wpa {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-        }
-
-        .security-wpa2 {
-            background: linear-gradient(135deg, #34d399, #10b981);
-        }
-
-        .security-wpa3 {
-            background: linear-gradient(135deg, #22d3ee, #06b6d4);
-        }
-
-        .security-unknown {
-            background: linear-gradient(135deg, #9ca3af, #6b7280);
-        }
-    </style>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 
-<body class="bg-gray-950 text-gray-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50 backdrop-blur-xl bg-opacity-90">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 font-['Inter'] p-4 md:p-8">
+
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div
+            class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000">
+        </div>
+    </div>
+
+    <div class="relative z-10 max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center gap-3 mb-4">
+                <div class="relative">
                     <div
-                        class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
-                            </path>
+                                d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                        </svg>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse"
+                        id="statusDot"></div>
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+                ESP32 WiFi Scanner
+            </h1>
+            <p class="text-slate-400 text-lg">Real-time network monitoring dashboard</p>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+
+            <!-- Total Networks Card -->
+            <div
+                class="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                     </div>
                     <div>
-                        <h1
-                            class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent">
-                            Adayanta WiFi Security Scanner
-                        </h1>
-                        <p class="text-sm text-gray-400">ESP32 IoT Kit Network Monitor</p>
+                        <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Networks</p>
+                        <p class="text-4xl font-bold text-white" id="count">--</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div id="connectionStatus" class="flex items-center space-x-2">
-                        <div id="statusDot" class="w-3 h-3 bg-gray-500 rounded-full"></div>
-                        <span id="statusText" class="text-sm text-gray-400">Waiting for ESP32...</span>
+            </div>
+
+            <!-- Strongest Signal Card -->
+            <div
+                class="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/10">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
                     </div>
-                    <button onclick="clearData()"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
-                        Clear Data
-                    </button>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Strongest Signal</p>
+                        <p class="text-4xl font-bold text-white"><span id="strongest">--</span> <span
+                                class="text-xl text-slate-400">dBm</span></p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
 
-    <!-- Stats Cards -->
-    <div class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-400 text-sm">Total Networks</span>
-                    <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                </div>
-                <div id="totalNetworks" class="text-3xl font-bold">0</div>
-            </div>
-
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-400 text-sm">Open Networks</span>
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                        </path>
-                    </svg>
-                </div>
-                <div id="openNetworks" class="text-3xl font-bold text-red-400">0</div>
-            </div>
-
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-400 text-sm">Secure Networks</span>
-                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
-                        </path>
-                    </svg>
-                </div>
-                <div id="secureNetworks" class="text-3xl font-bold text-green-400">0</div>
-            </div>
-
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-400 text-sm">Last Scan</span>
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div id="lastScan" class="text-sm">Never</div>
-            </div>
-        </div>
-
-        <!-- Network List -->
-        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                    </path>
-                </svg>
-                Detected Networks
-            </h2>
-
-            <div id="networkList" class="space-y-3">
-                <div class="text-center py-12 text-gray-500">
-                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
-                        </path>
-                    </svg>
-                    <p>No WiFi networks detected yet</p>
-                    <p class="text-sm mt-2">Waiting for ESP32 to send scan data...</p>
+            <!-- Last Update Card -->
+            <div
+                class="group bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Last Update</p>
+                        <p class="text-xl font-bold text-white" id="time">--</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Raw Data Log -->
-        <div class="mt-8 bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h2 class="text-xl font-semibold mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                </svg>
-                Raw Data Log
-            </h2>
-            <div id="rawDataLog" class="bg-black rounded-lg p-4 font-mono text-xs text-green-400 h-48 overflow-y-auto">
-                <div class="text-gray-500">Waiting for incoming data...</div>
+        <!-- Networks Table -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-white">Detected Networks</h2>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-400">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    Live
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-white/5">
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                                SSID</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                                Signal</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                                Channel</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                                BSSID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wifiTable" class="divide-y divide-white/5">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="py-16 text-center">
+                <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                </div>
+                <p class="text-slate-400 text-lg">Waiting for network data...</p>
+                <p class="text-slate-500 text-sm mt-1">Make sure your ESP32 is connected</p>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-slate-500 text-sm">
+            <p>Powered by ESP32 & Firebase Realtime Database</p>
+        </footer>
+
     </div>
 
-    <!-- API Endpoint Info -->
-    <div class="container mx-auto px-4 pb-8">
-        <div class="bg-blue-900 bg-opacity-30 border border-blue-800 rounded-xl p-6 mb-4">
-            <h3 class="text-lg font-semibold mb-2 text-blue-300">📡 ESP32 Configuration</h3>
-            <p class="text-sm text-gray-300 mb-3">Configure your ESP32 to send data to this endpoint:</p>
-            <div class="bg-black rounded-lg p-3 font-mono text-sm">
-                <span class="text-green-400">POST</span>
-                <span class="text-yellow-400" id="apiEndpoint"></span>
-            </div>
-            <div class="mt-4 text-xs text-gray-400">
-                <p>Expected JSON format:</p>
-                <pre class="bg-black rounded-lg p-3 mt-2 overflow-x-auto">
-{
-  "networks": [
-    {
-      "ssid": "NetworkName",
-      "security": "WPA2",
-      "rating": "S",
-      "rssi": -65
-    }
-  ]
-}</pre>
-            </div>
-        </div>
+    <script src="script.js"></script>
 
-        <!-- WiFi Troubleshooting Guide -->
-        <div class="bg-red-900 bg-opacity-30 border border-red-800 rounded-xl p-6">
-            <h3 class="text-lg font-semibold mb-4 text-red-300">🔧 WiFi Connection Troubleshooting</h3>
-
-            <div class="space-y-4">
-                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
-                    <h4 class="font-semibold text-yellow-400 mb-2">Common WiFi Connection Fixes:</h4>
-                    <ol class="text-sm space-y-2 text-gray-300">
-                        <li>1. <span class="text-cyan-400">Check SSID & Password:</span> Make sure they're correct in
-                            your ESP32 code</li>
-                        <li>2. <span class="text-cyan-400">Signal Strength:</span> Move ESP32 closer to router (needs
-                            RSSI > -75 dBm)</li>
-                        <li>3. <span class="text-cyan-400">2.4GHz Only:</span> ESP32 doesn't support 5GHz networks</li>
-                        <li>4. <span class="text-cyan-400">Special Characters:</span> Avoid @ # $ % in WiFi password
-                        </li>
-                        <li>5. <span class="text-cyan-400">Hidden SSID:</span> Make network visible or use
-                            WiFi.begin(ssid, pass, channel, bssid)</li>
-                    </ol>
-                </div>
-
-                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
-                    <h4 class="font-semibold text-yellow-400 mb-2">Updated ESP32 Code (With Error Handling):</h4>
-                    <pre class="bg-black rounded-lg p-3 text-xs overflow-x-auto text-green-400">
-// Better WiFi connection with retry logic
-const char* WIFI_SSID = "YourHotspot";     // Must be 2.4GHz
-const char* WIFI_PASS = "YourPassword";    // Exact password
-const char* POST_URL  = "http://192.168.1.100/api/wifi_report"; // Use IP not HTTPS
-
-void connectWiFi() {
-  WiFi.mode(WIFI_STA);  // Station mode
-  WiFi.disconnect();    // Clear old config
-  delay(100);
-  
-  lcd.clear();
-  lcd.print("Connecting WiFi");
-  
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  
-  int attempts = 0;
-  while(WiFi.status() != WL_CONNECTED && attempts < 30) {
-    delay(500);
-    lcd.setCursor(attempts % 16, 1);
-    lcd.print(".");
-    attempts++;
-    
-    // Show debug info
-    Serial.print(".");
-    Serial.print(" Status: ");
-    Serial.println(WiFi.status());
-  }
-  
-  if(WiFi.status() == WL_CONNECTED) {
-    lcd.clear();
-    lcd.print("WiFi OK!");
-    lcd.setCursor(0,1);
-    lcd.print(WiFi.localIP());
-    Serial.println("Connected! IP: " + WiFi.localIP().toString());
-  } else {
-    lcd.clear();
-    lcd.print("WiFi FAIL!");
-    lcd.setCursor(0,1);
-    
-    // Show error code
-    switch(WiFi.status()) {
-      case WL_NO_SSID_AVAIL:
-        lcd.print("SSID not found");
-        Serial.println("Error: SSID not found");
-        break;
-      case WL_CONNECT_FAILED:
-        lcd.print("Wrong password");
-        Serial.println("Error: Wrong password");
-        break;
-      case WL_CONNECTION_LOST:
-        lcd.print("Lost connection");
-        Serial.println("Error: Connection lost");
-        break;
-      default:
-        lcd.print("Error: " + String(WiFi.status()));
-        Serial.println("Error code: " + String(WiFi.status()));
-    }
-    
-    // Send error to website
-    sendError(WiFi.status());
-  }
-}
-
-void sendError(int errorCode) {
-  // If somehow connected, send error details
-  if(WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(POST_URL);
-    http.addHeader("Content-Type", "application/json");
-    
-    String json = "{\"error\":\"WiFi Error " + String(errorCode) + "\",";
-    json += "\"ssid\":\"" + String(WIFI_SSID) + "\"}";
-    
-    http.POST(json);
-    http.end();
-  }
-}</pre>
-                </div>
-
-                <div class="bg-gray-900 bg-opacity-50 rounded-lg p-4">
-                    <h4 class="font-semibold text-yellow-400 mb-2">Quick Test Commands (Serial Monitor):</h4>
-                    <pre class="bg-black rounded-lg p-3 text-xs overflow-x-auto text-cyan-400">
-// Add to your setup() for debugging:
-Serial.println("=== WiFi Debug Info ===");
-Serial.println("SSID: " + String(WIFI_SSID));
-Serial.println("Pass length: " + String(strlen(WIFI_PASS)));
-Serial.println("MAC: " + WiFi.macAddress());
-Serial.println("Scanning networks...");
-
-int n = WiFi.scanNetworks();
-for(int i = 0; i < n; i++) {
-  Serial.printf("%d: %s (%d dBm) %s\n", 
-    i+1, 
-    WiFi.SSID(i).c_str(), 
-    WiFi.RSSI(i),
-    WiFi.SSID(i) == String(WIFI_SSID) ? "← TARGET" : ""
-  );
-}</pre>
-                </div>
-
-                <div class="bg-yellow-900 bg-opacity-30 border border-yellow-700 rounded-lg p-3 mt-4">
-                    <p class="text-sm text-yellow-300">
-                        <strong>💡 Pro Tip:</strong> Use your phone's hotspot for testing! Name it "ESP32Test" with
-                        password "12345678" - much easier than home routers.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Store all received data
-        let allScans = [];
-
-        // Update API endpoint display
-        document.getElementById('apiEndpoint').textContent = window.location.origin + '/api/wifi_report';
-
-        // Security color mapping
-        const securityColors = {
-            'OPEN': 'security-open',
-            'WEP': 'security-wep',
-            'WPA': 'security-wpa',
-            'WPA2': 'security-wpa2',
-            'WPA3': 'security-wpa3',
-            'UNK': 'security-unknown'
-        };
-
-        // Rating descriptions
-        const ratingDescriptions = {
-            'D!': 'Dangerous - No encryption',
-            'B': 'Bad - Weak encryption',
-            'W': 'Weak - Old encryption',
-            'S': 'Secure - Good encryption',
-            'ST': 'Strong - Best encryption',
-            'U': 'Unknown security level'
-        };
-
-        // Signal strength indicator
-        function getSignalStrength(rssi) {
-            if (rssi >= -50) return { bars: 4, quality: 'Excellent' };
-            if (rssi >= -60) return { bars: 3, quality: 'Good' };
-            if (rssi >= -70) return { bars: 2, quality: 'Fair' };
-            if (rssi >= -80) return { bars: 1, quality: 'Weak' };
-            return { bars: 0, quality: 'Very Weak' };
-        }
-
-        // Create signal bars SVG
-        function createSignalBars(bars) {
-            let svg = '<svg class="w-5 h-5" viewBox="0 0 24 24">';
-            for (let i = 0; i < 4; i++) {
-                const opacity = i < bars ? '1' : '0.3';
-                const height = 6 + (i * 3);
-                const y = 18 - height;
-                svg += `<rect x="${5 + i * 4}" y="${y}" width="3" height="${height}" fill="currentColor" opacity="${opacity}"/>`;
-            }
-            svg += '</svg>';
-            return svg;
-        }
-
-        // Process incoming data
-        function processWiFiData(data) {
-            const timestamp = new Date().toLocaleString();
-
-            // Check for error in data
-            if (data.error) {
-                document.getElementById('statusDot').className = 'w-3 h-3 bg-red-500 rounded-full pulse';
-                document.getElementById('statusText').textContent = 'ESP32 WiFi Error';
-
-                // Show error in raw log
-                const rawLog = document.getElementById('rawDataLog');
-                const errorEntry = document.createElement('div');
-                errorEntry.className = 'text-red-400 mb-2';
-                errorEntry.innerHTML = `
-                    <div>[${timestamp}] WiFi Connection Failed:</div>
-                    <div class="ml-4">${data.error}</div>
-                    <div class="ml-4 text-yellow-400">Check: SSID="${data.ssid || 'Not Set'}" Password="${data.password ? '***' : 'Not Set'}"</div>
-                `;
-                rawLog.insertBefore(errorEntry, rawLog.firstChild);
-                return;
-            }
-
-            // Update connection status
-            document.getElementById('statusDot').className = 'w-3 h-3 bg-green-500 rounded-full pulse';
-            document.getElementById('statusText').textContent = 'Connected';
-
-            // Store scan data
-            allScans.push({
-                timestamp: timestamp,
-                data: data
-            });
-
-            // Update statistics
-            const networks = data.networks || [];
-            document.getElementById('totalNetworks').textContent = networks.length;
-            document.getElementById('openNetworks').textContent = networks.filter(n => n.security === 'OPEN').length;
-            document.getElementById('secureNetworks').textContent = networks.filter(n => n.security !== 'OPEN').length;
-            document.getElementById('lastScan').textContent = timestamp;
-
-            // Update network list
-            const networkList = document.getElementById('networkList');
-            if (networks.length > 0) {
-                networkList.innerHTML = '';
-                networks.forEach((network, index) => {
-                    const signal = getSignalStrength(network.rssi);
-                    const securityClass = securityColors[network.security] || 'security-unknown';
-
-                    const networkCard = document.createElement('div');
-                    networkCard.className = `slide-in bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-cyan-600 transition-all`;
-                    networkCard.style.animationDelay = `${index * 0.1}s`;
-
-                    networkCard.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3">
-                                    <div class="text-gray-300 ${signal.bars > 2 ? 'text-green-400' : signal.bars > 0 ? 'text-yellow-400' : 'text-red-400'}">
-                                        ${createSignalBars(signal.bars)}
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-white">${network.ssid || 'Hidden Network'}</h3>
-                                        <div class="flex items-center space-x-2 mt-1">
-                                            <span class="text-xs px-2 py-1 rounded-full text-white ${securityClass}">
-                                                ${network.security}
-                                            </span>
-                                            <span class="text-xs text-gray-400">
-                                                ${ratingDescriptions[network.rating] || 'Unknown'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-2xl font-bold text-gray-300">${network.rssi} dBm</div>
-                                <div class="text-xs text-gray-500">${signal.quality}</div>
-                            </div>
-                        </div>
-                    `;
-
-                    networkList.appendChild(networkCard);
-                });
-            }
-
-            // Update raw data log
-            const rawLog = document.getElementById('rawDataLog');
-            const logEntry = document.createElement('div');
-            logEntry.className = 'mb-2';
-            logEntry.innerHTML = `
-                <div class="text-cyan-400">[${timestamp}] Received scan data:</div>
-                <pre class="text-green-400 ml-4">${JSON.stringify(data, null, 2)}</pre>
-            `;
-            rawLog.insertBefore(logEntry, rawLog.firstChild);
-
-            // Limit log entries
-            while (rawLog.children.length > 10) {
-                rawLog.removeChild(rawLog.lastChild);
-            }
-        }
-
-        // Clear all data
-        function clearData() {
-            allScans = [];
-            document.getElementById('totalNetworks').textContent = '0';
-            document.getElementById('openNetworks').textContent = '0';
-            document.getElementById('secureNetworks').textContent = '0';
-            document.getElementById('lastScan').textContent = 'Never';
-            document.getElementById('networkList').innerHTML = `
-                <div class="text-center py-12 text-gray-500">
-                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
-                    </svg>
-                    <p>No WiFi networks detected yet</p>
-                    <p class="text-sm mt-2">Waiting for ESP32 to send scan data...</p>
-                </div>
-            `;
-            document.getElementById('rawDataLog').innerHTML = '<div class="text-gray-500">Waiting for incoming data...</div>';
-            document.getElementById('statusDot').className = 'w-3 h-3 bg-gray-500 rounded-full';
-            document.getElementById('statusText').textContent = 'Waiting for ESP32...';
-        }
-
-        // Simulate API endpoint (for demo purposes)
-        // In production, you'd have a real backend server
-        window.receiveWiFiData = function (jsonData) {
-            try {
-                const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
-                processWiFiData(data);
-            } catch (error) {
-                console.error('Error processing data:', error);
-                const rawLog = document.getElementById('rawDataLog');
-                const errorEntry = document.createElement('div');
-                errorEntry.className = 'text-red-400 mb-2';
-                errorEntry.textContent = `[${new Date().toLocaleString()}] Error: ${error.message}`;
-                rawLog.insertBefore(errorEntry, rawLog.firstChild);
-            }
-        };
-
-        // Test data for demonstration
-        setTimeout(() => {
-            const testData = {
-                "networks": [
-                    { "ssid": "HomeNetwork", "security": "WPA2", "rating": "S", "rssi": -45 },
-                    { "ssid": "Guest_WiFi", "security": "OPEN", "rating": "D!", "rssi": -62 },
-                    { "ssid": "Office_5G", "security": "WPA3", "rating": "ST", "rssi": -58 },
-                    { "ssid": "Neighbor_Net", "security": "WEP", "rating": "B", "rssi": -78 },
-                    { "ssid": "CoffeeShop", "security": "WPA", "rating": "W", "rssi": -71 }
-                ]
-            };
-
-            // Uncomment to see demo data on load
-            // receiveWiFiData(testData);
-        }, 1000);
-
-        // Listen for POST requests (you'll need a backend server for this)
-        // This is just a placeholder to show how it would work
-        if (typeof window !== 'undefined') {
-            // In a real implementation, you'd have a backend server
-            // that receives POST requests and forwards them to this page
-            console.log('WiFi Scanner Dashboard ready to receive data at:', window.location.origin + '/api/wifi_report');
-        }
-    </script>
 </body>
 
 </html>
