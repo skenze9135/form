@@ -1,12 +1,23 @@
 // -----------------------------------------------------
-// 1. Firebase Configuration
+// 1. Firebase Configuration (Modular SDK v12.6.0)
 // -----------------------------------------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
 const firebaseConfig = {
-    databaseURL: "https://esp32-scanner-810f5-default-rtdb.firebaseio.com/"
+    apiKey: "AIzaSyDJ4yFNi8MJ5W8fzCP2Tw3yVDam8IxyZuA",
+    authDomain: "esp32-scanner-810f5.firebaseapp.com",
+    databaseURL: "https://esp32-scanner-810f5-default-rtdb.firebaseio.com",
+    projectId: "esp32-scanner-810f5",
+    storageBucket: "esp32-scanner-810f5.firebasestorage.app",
+    messagingSenderId: "631684355138",
+    appId: "1:631684355138:web:073ca5067dca5b450149db",
+    measurementId: "G-MP6S370VDF"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 // -----------------------------------------------------
 // 2. Helper Functions
@@ -89,10 +100,37 @@ function timeAgo(date) {
     return date.toLocaleDateString();
 }
 
+// Animate Value Helper
+function animateValue(element, start, end, duration) {
+    if (start === end) return;
+
+    const range = end - start;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = Math.round(start + range * easeOutQuart);
+
+        element.textContent = current;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
 // -----------------------------------------------------
 // 3. Live Data Listener
 // -----------------------------------------------------
-firebase.database().ref("scans/latest").on("value", (snapshot) => {
+const scansRef = ref(db, "scans/latest");
+
+onValue(scansRef, (snapshot) => {
     const data = snapshot.val();
     const emptyState = document.getElementById("emptyState");
     const statusDot = document.getElementById("statusDot");
@@ -184,36 +222,11 @@ firebase.database().ref("scans/latest").on("value", (snapshot) => {
 });
 
 // -----------------------------------------------------
-// 4. Animate Value Helper
+// 4. Connection Status Check
 // -----------------------------------------------------
-function animateValue(element, start, end, duration) {
-    if (start === end) return;
+const connectedRef = ref(db, ".info/connected");
 
-    const range = end - start;
-    const startTime = performance.now();
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Easing function
-        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-        const current = Math.round(start + range * easeOutQuart);
-
-        element.textContent = current;
-
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        }
-    }
-
-    requestAnimationFrame(update);
-}
-
-// -----------------------------------------------------
-// 5. Connection Status Check
-// -----------------------------------------------------
-firebase.database().ref(".info/connected").on("value", (snapshot) => {
+onValue(connectedRef, (snapshot) => {
     const statusDot = document.getElementById("statusDot");
     if (snapshot.val() === true) {
         statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse';
