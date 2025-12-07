@@ -128,7 +128,7 @@ function animateValue(element, start, end, duration) {
 // -----------------------------------------------------
 // 3. Live Data Listener
 // -----------------------------------------------------
-const scansRef = ref(db, "esp32/lastScan");
+const scansRef = ref(db, "scanner/latest");
 
 onValue(scansRef, (snapshot) => {
   const data = snapshot.val();
