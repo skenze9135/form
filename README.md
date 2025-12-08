@@ -9,8 +9,3 @@ A real-time dashboard that displays WiFi scan data from an ESP32. The ESP32 send
    ├── index.html     → Main dashboard webpage
    ├── script.js      → Firebase connection + live data handling
    └── styles.css     → UI styling
-
-firebase.json         → Firebase hosting configuration
-.firebaserc           → Firebase project reference
-README.md             → Project info
-
