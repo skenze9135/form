@@ -2,7 +2,7 @@
 // 1. Firebase Configuration (Modular SDK v12.6.0)
 // -----------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDJ4yFNi8MJ5W8fzCP2Tw3yVDam8IxyZuA",
@@ -100,6 +100,24 @@ function timeAgo(date) {
   return date.toLocaleDateString();
 }
 
+// Format ESP32 uptime (millis/1000 = seconds since boot)
+function formatUptime(seconds) {
+  if (seconds < 60) return `${seconds}s uptime`;
+  if (seconds < 3600) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  }
+  if (seconds < 86400) {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${mins}m`;
+  }
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  return `${days}d ${hours}h`;
+}
+
 // Animate Value Helper
 function animateValue(element, start, end, duration) {
   if (start === end) return;
@@ -126,18 +144,33 @@ function animateValue(element, start, end, duration) {
 }
 
 // -----------------------------------------------------
-// 3. Live Data Listener
+// 3. Live Data Listener - Reading from /scanner/history/
 // -----------------------------------------------------
-const scansRef = ref(db, "scanner/latest");
 
-onValue(scansRef, (snapshot) => {
-  const data = snapshot.val();
+// Listen to the history path and get the latest entry
+const historyRef = ref(db, "scanner/history");
+const latestQuery = query(historyRef, orderByKey(), limitToLast(1));
+
+onValue(latestQuery, (snapshot) => {
   const emptyState = document.getElementById("emptyState");
   const statusDot = document.getElementById("statusDot");
 
-  if (!data) {
+  if (!snapshot.exists()) {
     emptyState.style.display = 'block';
     statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-red-400 rounded-full border-2 border-slate-900';
+    return;
+  }
+
+  // Get the latest entry (there's only one due to limitToLast(1))
+  let data = null;
+  let latestKey = null;
+  snapshot.forEach((childSnapshot) => {
+    latestKey = childSnapshot.key;
+    data = childSnapshot.val();
+  });
+
+  if (!data) {
+    emptyState.style.display = 'block';
     return;
   }
 
@@ -158,14 +191,19 @@ onValue(scansRef, (snapshot) => {
   // Update strongest signal
   strongestEl.textContent = data.strongest;
 
-  // Update time
-  const date = new Date(data.timestamp);
-  timeEl.textContent = date.toLocaleTimeString();
+  // Update time - timestamp from ESP32 is millis(), key is seconds
+  // Use the key (seconds since boot) to show relative time
+  const scanTime = new Date();
+  const uptimeSeconds = parseInt(latestKey);
+  timeEl.textContent = formatUptime(uptimeSeconds);
+
+  // Store scan receive time for "time ago" display
+  const receivedTime = new Date();
 
   // Update time periodically
   clearInterval(window.timeUpdateInterval);
   window.timeUpdateInterval = setInterval(() => {
-    timeEl.textContent = timeAgo(date);
+    timeEl.textContent = timeAgo(receivedTime);
   }, 10000);
 
   // -------- Fill Table --------
@@ -178,7 +216,7 @@ onValue(scansRef, (snapshot) => {
   networks.forEach((net, index) => {
     const signal = getSignalStrength(net.rssi);
     const encryption = getEncryptionType(net.encryption);
-    const isHidden = net.hidden || !net.ssid;
+    const isHidden = net.hidden || !net.ssid || net.ssid.length === 0;
     const ssidDisplay = isHidden ? 'Hidden Network' : net.ssid;
     const ssidClass = isHidden ? 'ssid-text ssid-hidden' : 'ssid-text';
     const hiddenBadge = isHidden ? '<span class="hidden-badge">Hidden</span>' : '';
