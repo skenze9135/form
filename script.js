@@ -1,9 +1,4 @@
-// -----------------------------------------------------
-// 1. Firebase Configuration (Modular SDK v12.6.0)
-// -----------------------------------------------------
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
-
+// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD-t79JyFVE90z4jbk5gfE_E6sY96uj44A",
   authDomain: "wifi-scan-dashbord-4de3e.firebaseapp.com",
@@ -11,264 +6,471 @@ const firebaseConfig = {
   projectId: "wifi-scan-dashbord-4de3e",
   storageBucket: "wifi-scan-dashbord-4de3e.firebasestorage.app",
   messagingSenderId: "462096576948",
-  appId: "1:462096576948:web:b7b96b3a1a0d7f358302e1",
-  measurementId: "G-R6XQCWH7FX"
+  appId: "1:462096576948:web:aa913cf8f93f05dd8302e1",
+  measurementId: "G-56LM0ESD1D"
+};
+
+let db = null;
+let currentNetworks = [];
+let currentSortBy = 'signal';
+let allScanData = {}; // Store all fetched scan data
+
+// Encryption type mapping
+const encryptionTypes = {
+  0: { name: 'Open', icon: 'fa-unlock', color: 'red' },
+  1: { name: 'WEP', icon: 'fa-lock', color: 'orange' },
+  2: { name: 'WPA-PSK', icon: 'fa-lock', color: 'yellow' },
+  3: { name: 'WPA2-PSK', icon: 'fa-shield-alt', color: 'green' },
+  4: { name: 'WPA/WPA2', icon: 'fa-shield-alt', color: 'green' },
+  5: { name: 'WPA2-Enterprise', icon: 'fa-building', color: 'blue' },
+  6: { name: 'WPA3-PSK', icon: 'fa-shield-alt', color: 'purple' },
+  7: { name: 'WPA2/WPA3', icon: 'fa-shield-alt', color: 'purple' }
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// -----------------------------------------------------
-// 2. Helper Functions
-// -----------------------------------------------------
-
-// Get signal strength category
-function getSignalStrength(rssi) {
-  if (rssi >= -50) return { level: 'excellent', bars: 5, label: 'Excellent' };
-  if (rssi >= -60) return { level: 'good', bars: 4, label: 'Good' };
-  if (rssi >= -70) return { level: 'fair', bars: 3, label: 'Fair' };
-  if (rssi >= -80) return { level: 'weak', bars: 2, label: 'Weak' };
-  return { level: 'poor', bars: 1, label: 'Poor' };
-}
-
-// Get encryption type from ESP32 encryption code
-function getEncryptionType(encryption) {
-  const types = {
-    0: { name: 'Open', class: 'open', icon: 'unlock' },
-    1: { name: 'WEP', class: 'wep', icon: 'lock' },
-    2: { name: 'WPA', class: 'wpa', icon: 'lock' },
-    3: { name: 'WPA2', class: 'wpa2', icon: 'lock' },
-    4: { name: 'WPA/WPA2', class: 'wpa2', icon: 'lock' },
-    5: { name: 'Enterprise', class: 'enterprise', icon: 'shield' },
-    6: { name: 'WPA3', class: 'wpa3', icon: 'shield' },
-    7: { name: 'WPA2/WPA3', class: 'wpa3', icon: 'shield' },
-    8: { name: 'WAPI', class: 'wpa2', icon: 'lock' }
-  };
-  return types[encryption] || { name: 'Unknown', class: 'open', icon: 'help' };
-}
-
-// Create encryption icon SVG
-function createEncryptionIcon(type) {
-  if (type === 'unlock') {
-    return `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-    </svg>`;
-  } else if (type === 'shield') {
-    return `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-    </svg>`;
-  } else {
-    return `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-    </svg>`;
+function initFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    updateStatus('Connected', 'green');
+    setupRealtimeListeners();
+  } catch (error) {
+    console.error('Firebase init error:', error);
+    updateStatus('Connection Error', 'red');
   }
 }
 
-// Create signal bars HTML
-function createSignalBars(rssi) {
-  const signal = getSignalStrength(rssi);
-  const heights = [4, 7, 10, 13, 16];
+// Update connection status
+function updateStatus(text, color) {
+  const dot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
 
-  let barsHtml = `<div class="signal-bars signal-${signal.level}">`;
-  for (let i = 0; i < 5; i++) {
-    const isActive = i < signal.bars;
-    barsHtml += `<div class="signal-bar ${isActive ? 'active' : 'inactive'}" style="height: ${heights[i]}px;"></div>`;
-  }
-  barsHtml += '</div>';
-
-  return barsHtml;
+  dot.className = `w-3 h-3 rounded-full bg-${color}-500`;
+  if (color === 'green') dot.classList.add('pulse-glow');
+  statusText.textContent = text;
 }
 
-// Create WiFi icon SVG
-function createWifiIcon() {
-  return `
-    <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-    </svg>
-  `;
+// Update last update time
+function updateLastTime() {
+  const now = new Date();
+  document.getElementById('lastUpdate').textContent =
+    `Last update: ${now.toLocaleTimeString()}`;
 }
 
-// Format time ago
-function timeAgo(date) {
-  const seconds = Math.floor((new Date() - date) / 1000);
-
-  if (seconds < 10) return 'Just now';
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return date.toLocaleDateString();
-}
-
-// Format ESP32 uptime (millis/1000 = seconds since boot)
-function formatUptime(seconds) {
-  if (seconds < 60) return `${seconds}s uptime`;
-  if (seconds < 3600) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-  }
-  if (seconds < 86400) {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${mins}m`;
-  }
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  return `${days}d ${hours}h`;
-}
-
-// Animate Value Helper
-function animateValue(element, start, end, duration) {
-  if (start === end) return;
-
-  const range = end - start;
-  const startTime = performance.now();
-
-  function update(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-
-    // Easing function
-    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-    const current = Math.round(start + range * easeOutQuart);
-
-    element.textContent = current;
-
-    if (progress < 1) {
-      requestAnimationFrame(update);
+// Setup realtime listeners
+function setupRealtimeListeners() {
+  // Listen to latest scan
+  db.ref('scans').orderByKey().limitToLast(1).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      const latestScanKey = Object.keys(data)[0];
+      const latestScan = data[latestScanKey];
+      updateDashboard(latestScan);
+      updateLastTime();
     }
-  }
+  });
 
-  requestAnimationFrame(update);
+  // Listen to scans (limit to last 2000 to prevent overload)
+  db.ref('scans').orderByKey().limitToLast(2000).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      allScanData = data; // Store for modal
+      const scanCount = Object.keys(data).length;
+      document.getElementById('totalScans').textContent = scanCount >= 2000 ? '2000+' : scanCount;
+      updateScanHistory(data);
+
+      // Update modal if open
+      if (!document.getElementById('historyModal').classList.contains('hidden')) {
+        renderHistoryModal();
+      }
+    }
+  });
 }
 
-// -----------------------------------------------------
-// 3. Live Data Listener - Reading from /scanner/history/
-// -----------------------------------------------------
+// Update main dashboard with scan data
+function updateDashboard(scanData) {
+  // Update device name
+  document.getElementById('deviceName').textContent = scanData.device || 'Unknown';
 
-// Listen to the history path and get the latest entry
-const historyRef = ref(db, "scanner/history");
-const latestQuery = query(historyRef, orderByKey(), limitToLast(1));
+  // Update network count
+  document.getElementById('networkCount').textContent = scanData.count || 0;
 
-onValue(latestQuery, (snapshot) => {
-  const emptyState = document.getElementById("emptyState");
-  const statusDot = document.getElementById("statusDot");
+  // Store networks for sorting
+  currentNetworks = scanData.networks || [];
 
-  if (!snapshot.exists()) {
-    emptyState.style.display = 'block';
-    statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-red-400 rounded-full border-2 border-slate-900';
+  // Find strongest network
+  if (currentNetworks.length > 0) {
+    const strongest = currentNetworks.reduce((a, b) => a.rssi > b.rssi ? a : b);
+    const strongestName = strongest.ssid || (strongest.hidden ? '<Hidden>' : 'Unknown');
+    document.getElementById('strongestNetwork').textContent = strongestName;
+    document.getElementById('strongestRSSI').textContent = `${strongest.rssi} dBm`;
+  }
+
+  // Update networks list
+  sortNetworks(currentSortBy);
+
+  // Update statistics
+  updateSignalDistribution(currentNetworks);
+  updateChannelChart(currentNetworks);
+  updateEncryptionStats(currentNetworks);
+}
+
+// Sort and display networks
+function sortNetworks(sortBy) {
+  currentSortBy = sortBy;
+  let sortedNetworks = [...currentNetworks];
+
+  if (sortBy === 'signal') {
+    sortedNetworks.sort((a, b) => b.rssi - a.rssi);
+  } else if (sortBy === 'name') {
+    sortedNetworks.sort((a, b) => (a.ssid || '').localeCompare(b.ssid || ''));
+  }
+
+  displayNetworks(sortedNetworks);
+}
+
+// Display networks list
+function displayNetworks(networks) {
+  const container = document.getElementById('networksList');
+
+  if (networks.length === 0) {
+    container.innerHTML = `
+            <div class="text-gray-400 text-center py-8">
+                <i class="fas fa-wifi-slash text-2xl mb-2"></i>
+                <p>No networks found</p>
+            </div>
+        `;
     return;
   }
 
-  // Get the latest entry (there's only one due to limitToLast(1))
-  let data = null;
-  let latestKey = null;
-  snapshot.forEach((childSnapshot) => {
-    latestKey = childSnapshot.key;
-    data = childSnapshot.val();
+  container.innerHTML = networks.map((network, index) => {
+    const signalInfo = getSignalInfo(network.rssi);
+    const encryption = encryptionTypes[network.encryption] || encryptionTypes[0];
+    // Logic for hidden networks
+    let ssidDisplay = network.ssid;
+    let isHidden = network.hidden;
+
+    if (!ssidDisplay || ssidDisplay.length === 0) {
+      ssidDisplay = 'Hidden Network';
+      isHidden = true; // Force hidden flag if SSID is empty
+    }
+
+    return `
+            <div class="network-card flex items-center justify-between p-4 bg-gray-700/50 rounded-xl transition-all duration-300 hover:bg-gray-700">
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <div class="w-12 h-12 bg-${signalInfo.color}-500/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-wifi text-${signalInfo.color}-400 text-xl"></i>
+                        </div>
+                        ${isHidden ? '<span class="absolute -top-1 -right-1 w-5 h-5 bg-gray-600 border-2 border-gray-800 rounded-full flex items-center justify-center" title="Hidden Network"><i class="fas fa-eye-slash text-[10px] text-gray-300"></i></span>' : ''}
+                    </div>
+                    <div>
+                        <p class="font-medium ${isHidden ? 'italic text-gray-400' : ''}">
+                           ${ssidDisplay}
+                           ${isHidden ? '<span class="ml-2 text-xs bg-gray-600 px-1.5 py-0.5 rounded text-gray-300">HIDDEN</span>' : ''}
+                        </p>
+                        <p class="text-sm text-gray-400 font-mono">${network.bssid || '--'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-center hidden sm:block">
+                        <p class="text-xs text-gray-500">Channel</p>
+                        <p class="font-medium">${network.channel || '--'}</p>
+                    </div>
+                    <div class="text-center hidden sm:block">
+                        <p class="text-xs text-gray-500">Security</p>
+                        <p class="text-${encryption.color}-400 text-sm flex items-center gap-1 justify-center">
+                            <i class="fas ${encryption.icon}"></i>
+                            ${encryption.name}
+                        </p>
+                    </div>
+                    <div class="text-right min-w-[80px]">
+                        <p class="font-bold text-${signalInfo.color}-400">${network.rssi} dBm</p>
+                        <div class="flex items-end gap-0.5 justify-end mt-1">
+                            ${generateSignalBars(network.rssi)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+  }).join('');
+}
+
+// Get signal info based on RSSI
+function getSignalInfo(rssi) {
+  if (rssi >= -50) return { level: 'Excellent', color: 'green' };
+  if (rssi >= -60) return { level: 'Good', color: 'blue' };
+  if (rssi >= -70) return { level: 'Fair', color: 'yellow' };
+  return { level: 'Weak', color: 'red' };
+}
+
+// Generate signal bars HTML
+function generateSignalBars(rssi) {
+  let bars = 1;
+  if (rssi >= -50) bars = 4;
+  else if (rssi >= -60) bars = 3;
+  else if (rssi >= -70) bars = 2;
+
+  const signalInfo = getSignalInfo(rssi);
+  let html = '';
+  for (let i = 1; i <= 4; i++) {
+    const height = i * 3 + 2;
+    const active = i <= bars;
+    html += `<div class="w-1.5 bg-${active ? signalInfo.color : 'gray'}-${active ? '400' : '600'} rounded-sm" style="height: ${height}px"></div>`;
+  }
+  return html;
+}
+
+// Update signal distribution chart
+function updateSignalDistribution(networks) {
+  let excellent = 0, good = 0, fair = 0, weak = 0;
+
+  networks.forEach(n => {
+    if (n.rssi >= -50) excellent++;
+    else if (n.rssi >= -60) good++;
+    else if (n.rssi >= -70) fair++;
+    else weak++;
   });
 
-  if (!data) {
-    emptyState.style.display = 'block';
+  const total = networks.length || 1;
+
+  document.getElementById('signalExcellent').style.width = `${(excellent / total) * 100}%`;
+  document.getElementById('signalGood').style.width = `${(good / total) * 100}%`;
+  document.getElementById('signalFair').style.width = `${(fair / total) * 100}%`;
+  document.getElementById('signalWeak').style.width = `${(weak / total) * 100}%`;
+
+  document.getElementById('countExcellent').textContent = excellent;
+  document.getElementById('countGood').textContent = good;
+  document.getElementById('countFair').textContent = fair;
+  document.getElementById('countWeak').textContent = weak;
+}
+
+// Update channel usage chart
+function updateChannelChart(networks) {
+  const channels = {};
+  for (let i = 1; i <= 14; i++) channels[i] = 0;
+
+  networks.forEach(n => {
+    if (n.channel && channels[n.channel] !== undefined) {
+      channels[n.channel]++;
+    }
+  });
+
+  const maxCount = Math.max(...Object.values(channels), 1);
+  const container = document.getElementById('channelChart');
+
+  container.innerHTML = Object.entries(channels).map(([ch, count]) => {
+    const height = Math.max((count / maxCount) * 100, 10);
+    const color = count > 0 ? (count > 2 ? 'orange' : 'blue') : 'gray';
+    return `
+            <div class="flex flex-col items-center gap-1">
+                <div class="w-full bg-gray-700 rounded-t h-16 flex items-end">
+                    <div class="w-full bg-${color}-500 rounded-t transition-all duration-500" style="height: ${height}%"></div>
+                </div>
+                <span class="text-xs text-gray-400">${ch}</span>
+            </div>
+        `;
+  }).join('');
+}
+
+// Update encryption statistics
+function updateEncryptionStats(networks) {
+  const stats = {};
+
+  networks.forEach(n => {
+    const enc = encryptionTypes[n.encryption] || encryptionTypes[0];
+    stats[enc.name] = (stats[enc.name] || 0) + 1;
+  });
+
+  const container = document.getElementById('encryptionStats');
+
+  if (Object.keys(stats).length === 0) {
+    container.innerHTML = '<p class="text-gray-400 text-sm">No data</p>';
     return;
   }
 
-  // Hide empty state
-  emptyState.style.display = 'none';
+  container.innerHTML = Object.entries(stats).map(([name, count]) => {
+    const encType = Object.values(encryptionTypes).find(e => e.name === name) || encryptionTypes[0];
+    return `
+            <div class="flex items-center justify-between py-2 border-b border-gray-700 last:border-0">
+                <span class="flex items-center gap-2 text-sm">
+                    <i class="fas ${encType.icon} text-${encType.color}-400"></i>
+                    ${name}
+                </span>
+                <span class="bg-${encType.color}-500/20 text-${encType.color}-400 px-2 py-0.5 rounded text-sm">${count}</span>
+            </div>
+        `;
+  }).join('');
+}
 
-  // Update status dot to green
-  statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse';
+// Update scan history
+function updateScanHistory(allScans) {
+  const container = document.getElementById('scanHistory');
+  const scansArray = Object.entries(allScans)
+    .map(([key, value]) => ({ key, ...value }))
+    .reverse()
+    .slice(0, 8);
 
-  // Update stats with animation
-  const countEl = document.getElementById("count");
-  const strongestEl = document.getElementById("strongest");
-  const timeEl = document.getElementById("time");
+  container.innerHTML = scansArray.map((scan, index) => {
+    const networkCount = scan.count || 0;
+    const strongest = scan.networks?.reduce((a, b) => a.rssi > b.rssi ? a : b, { rssi: -100 });
+    const timestamp = getTimestampFromId(scan.key);
+    const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Animate count
-  animateValue(countEl, parseInt(countEl.textContent) || 0, data.count, 500);
+    return `
+            <div class="bg-gray-700/50 rounded-xl p-4 hover:bg-gray-700 transition cursor-pointer" onclick="loadScan('${scan.key}')">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs text-gray-500">${timeStr}</span>
+                    <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">${networkCount} networks</span>
+                </div>
+                <p class="font-medium text-sm truncate">${scan.device || 'Unknown'}</p>
+                <p class="text-xs text-gray-400 mt-1">Strongest: ${strongest?.ssid || (strongest?.hidden ? 'Hidden' : '--')} (${strongest?.rssi || '--'} dBm)</p>
+            </div>
+        `;
+  }).join('');
+}
 
-  // Update strongest signal
-  strongestEl.textContent = data.strongest;
+// Firebase Push ID Timestamp decoder
+function getTimestampFromId(id) {
+  try {
+    const PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+    id = id.substring(0, 8);
+    let timestamp = 0;
+    for (let i = 0; i < 8; i++) {
+      timestamp = timestamp * 64 + PUSH_CHARS.indexOf(id.charAt(i));
+    }
+    return timestamp;
+  } catch (e) {
+    return Date.now();
+  }
+}
 
-  // Update time - timestamp from ESP32 is millis(), key is seconds
-  // Use the key (seconds since boot) to show relative time
-  const scanTime = new Date();
-  const uptimeSeconds = parseInt(latestKey);
-  timeEl.textContent = formatUptime(uptimeSeconds);
+// History Modal Functions
+function openHistoryModal() {
+  document.getElementById('historyModal').classList.remove('hidden');
+  renderHistoryModal();
+}
 
-  // Store scan receive time for "time ago" display
-  const receivedTime = new Date();
+function closeHistoryModal() {
+  document.getElementById('historyModal').classList.add('hidden');
+}
 
-  // Update time periodically
-  clearInterval(window.timeUpdateInterval);
-  window.timeUpdateInterval = setInterval(() => {
-    timeEl.textContent = timeAgo(receivedTime);
-  }, 10000);
+function renderHistoryModal() {
+  const container = document.getElementById('fullHistoryList');
+  const loading = document.getElementById('historyLoading');
+  const empty = document.getElementById('historyEmpty');
 
-  // -------- Fill Table --------
-  const table = document.getElementById("wifiTable");
-  table.innerHTML = "";
+  container.innerHTML = '';
 
-  // Sort networks by signal strength (strongest first)
-  const networks = [...data.networks].sort((a, b) => b.rssi - a.rssi);
+  // Filter last 30 days
+  const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
 
-  networks.forEach((net, index) => {
-    const signal = getSignalStrength(net.rssi);
-    const encryption = getEncryptionType(net.encryption);
-    const isHidden = net.hidden || !net.ssid || net.ssid.length === 0;
-    const ssidDisplay = isHidden ? 'Hidden Network' : net.ssid;
-    const ssidClass = isHidden ? 'ssid-text ssid-hidden' : 'ssid-text';
-    const hiddenBadge = isHidden ? '<span class="hidden-badge">Hidden</span>' : '';
+  const historyItems = Object.entries(allScanData)
+    .map(([key, value]) => {
+      return {
+        id: key,
+        timestamp: getTimestampFromId(key),
+        ...value
+      };
+    })
+    .filter(item => item.timestamp > thirtyDaysAgo)
+    .sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
-    const row = document.createElement('tr');
-    row.className = 'table-row';
-    row.style.animationDelay = `${index * 50}ms`;
+  document.getElementById('historyStats').textContent = `Showing ${historyItems.length} records`;
 
-    row.innerHTML = `
-      <td class="px-6 py-4">
-        <div class="ssid-name">
-          <div class="ssid-icon">
-            ${createWifiIcon()}
-          </div>
-          <span class="${ssidClass}">${ssidDisplay}</span>
-          ${hiddenBadge}
-        </div>
-      </td>
-      <td class="px-6 py-4">
-        <div class="rssi-badge rssi-${signal.level}">
-          ${createSignalBars(net.rssi)}
-          <span>${net.rssi} dBm</span>
-        </div>
-      </td>
-      <td class="px-6 py-4">
-        <span class="encryption-badge encryption-${encryption.class}">
-          ${createEncryptionIcon(encryption.icon)}
-          ${encryption.name}
-        </span>
-      </td>
-      <td class="px-6 py-4">
-        <span class="channel-badge">${net.channel}</span>
-      </td>
-      <td class="px-6 py-4">
-        <span class="bssid">${net.bssid}</span>
-      </td>
-    `;
-
-    table.appendChild(row);
-  });
-});
-
-// -----------------------------------------------------
-// 4. Connection Status Check
-// -----------------------------------------------------
-const connectedRef = ref(db, ".info/connected");
-
-onValue(connectedRef, (snapshot) => {
-  const statusDot = document.getElementById("statusDot");
-  if (snapshot.val() === true) {
-    statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900 animate-pulse';
+  if (historyItems.length === 0) {
+    empty.classList.remove('hidden');
+    return;
   } else {
-    statusDot.className = 'absolute -top-1 -right-1 w-4 h-4 bg-red-400 rounded-full border-2 border-slate-900';
+    empty.classList.add('hidden');
   }
-});
+
+  container.innerHTML = historyItems.map(scan => {
+    const date = new Date(scan.timestamp);
+    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    const strongest = scan.networks?.reduce((a, b) => a.rssi > b.rssi ? a : b, { rssi: -100, ssid: '' });
+    const strongestName = strongest.ssid || (strongest.hidden ? 'Hidden Network' : 'N/A');
+
+    return `
+            <tr class="border-b border-gray-700/50 hover:bg-gray-700/30 transition last:border-0">
+                <td class="py-3 pl-2 text-gray-300 whitespace-nowrap">${dateStr}</td>
+                <td class="py-3 text-gray-300">${scan.device || 'Unknown'}</td>
+                <td class="py-3 text-center">
+                    <span class="bg-gray-700 text-gray-300 px-2 py-1 rounded text-xs">${scan.count || 0}</span>
+                </td>
+                <td class="py-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full ${strongest.rssi > -60 ? 'bg-green-500' : 'bg-yellow-500'}"></span>
+                        <span class="text-gray-300 truncate max-w-[150px]" title="${strongestName}">${strongestName}</span>
+                        <span class="text-xs text-gray-500">(${strongest.rssi} dBm)</span>
+                    </div>
+                </td>
+                <td class="py-3 pr-2 text-right">
+                    <button onclick="loadScanAndClose('${scan.id}')" class="text-blue-400 hover:text-blue-300 text-sm font-medium">
+                        Load
+                    </button>
+                </td>
+            </tr>
+        `;
+  }).join('');
+}
+
+function loadScanAndClose(scanId) {
+  loadScan(scanId);
+  closeHistoryModal();
+}
+
+function exportHistory() {
+  const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+  const historyItems = Object.entries(allScanData)
+    .map(([key, value]) => ({
+      id: key,
+      timestamp: getTimestampFromId(key),
+      ...value
+    }))
+    .filter(item => item.timestamp > thirtyDaysAgo)
+    .sort((a, b) => b.timestamp - a.timestamp);
+
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "Timestamp,Date,Time,Device,Network Count,Strongest SSID,Strongest RSSI,Hidden Networks Count\n";
+
+  historyItems.forEach(item => {
+    const date = new Date(item.timestamp);
+    const strongest = item.networks?.reduce((a, b) => a.rssi > b.rssi ? a : b, { rssi: '', ssid: '' });
+    const strongestName = strongest.ssid || (strongest.hidden ? '<Hidden>' : '');
+    const hiddenCount = item.networks ? item.networks.filter(n => n.hidden).length : 0;
+
+    const row = [
+      item.timestamp,
+      date.toLocaleDateString(),
+      date.toLocaleTimeString(),
+      item.device || 'Unknown',
+      item.count || 0,
+      `"${strongestName}"`,
+      strongest.rssi || '',
+      hiddenCount
+    ].join(",");
+    csvContent += row + "\n";
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "wifi_scan_history.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Load specific scan
+function loadScan(scanKey) {
+  db.ref(`scans/${scanKey}`).once('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      updateDashboard(data);
+    }
+  });
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initFirebase);

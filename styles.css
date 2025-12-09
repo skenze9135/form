@@ -1,278 +1,63 @@
-/* Custom Animations */
-@keyframes float {
+@keyframes pulse-glow {
 
     0%,
     100% {
-        transform: translateY(0px);
+        box-shadow: 0 0 5px rgba(34, 197, 94, 0.5);
     }
 
     50% {
-        transform: translateY(-10px);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
     }
 }
 
-@keyframes glow {
+@keyframes scan-line {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
 
-    0%,
+    50% {
+        opacity: 1;
+    }
+
     100% {
-        box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 0 40px rgba(6, 182, 212, 0.6);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeIn {
-    from {
+        transform: translateY(100%);
         opacity: 0;
     }
-
-    to {
-        opacity: 1;
-    }
 }
 
-/* Signal Strength Bars */
-.signal-bars {
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 16px;
+.pulse-glow {
+    animation: pulse-glow 2s infinite;
 }
 
 .signal-bar {
-    width: 4px;
-    border-radius: 2px;
     transition: all 0.3s ease;
 }
 
-.signal-bar.active {
-    animation: fadeIn 0.3s ease forwards;
+.scan-animation {
+    animation: scan-line 2s ease-in-out infinite;
 }
 
-/* Signal strength colors */
-.signal-excellent .signal-bar.active {
-    background: linear-gradient(to top, #10b981, #34d399);
+.network-card:hover {
+    transform: translateX(5px);
 }
 
-.signal-good .signal-bar.active {
-    background: linear-gradient(to top, #22c55e, #86efac);
-}
-
-.signal-fair .signal-bar.active {
-    background: linear-gradient(to top, #eab308, #fde047);
-}
-
-.signal-weak .signal-bar.active {
-    background: linear-gradient(to top, #f97316, #fdba74);
-}
-
-.signal-poor .signal-bar.active {
-    background: linear-gradient(to top, #ef4444, #fca5a5);
-}
-
-.signal-bar.inactive {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Table row animation */
-.table-row {
-    animation: slideIn 0.3s ease forwards;
-    opacity: 0;
-}
-
-.table-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* RSSI Badge */
-.rssi-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-.rssi-excellent {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-}
-
-.rssi-good {
-    background: rgba(34, 197, 94, 0.15);
-    color: #86efac;
-}
-
-.rssi-fair {
-    background: rgba(234, 179, 8, 0.15);
-    color: #fde047;
-}
-
-.rssi-weak {
-    background: rgba(249, 115, 22, 0.15);
-    color: #fdba74;
-}
-
-.rssi-poor {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-}
-
-/* Channel badge */
-.channel-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-/* Encryption badges */
-.encryption-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 12px;
-}
-
-.encryption-open {
-    background: rgba(239, 68, 68, 0.15);
-    color: #fca5a5;
-}
-
-.encryption-wep {
-    background: rgba(249, 115, 22, 0.15);
-    color: #fdba74;
-}
-
-.encryption-wpa {
-    background: rgba(234, 179, 8, 0.15);
-    color: #fde047;
-}
-
-.encryption-wpa2 {
-    background: rgba(34, 197, 94, 0.15);
-    color: #86efac;
-}
-
-.encryption-wpa3 {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-}
-
-.encryption-enterprise {
-    background: rgba(59, 130, 246, 0.15);
-    color: #93c5fd;
-}
-
-/* Hidden network indicator */
-.hidden-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 8px;
-    padding: 2px 8px;
-    background: rgba(100, 116, 139, 0.2);
-    color: #94a3b8;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-
-/* BSSID styling */
-.bssid {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 12px;
-    color: #94a3b8;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 4px 8px;
-    border-radius: 6px;
-}
-
-/* SSID styling */
-.ssid-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.ssid-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.ssid-text {
-    font-weight: 500;
-    color: #f1f5f9;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.ssid-hidden {
-    color: #64748b;
-    font-style: italic;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
+/* Custom Scrollbar for Modal */
+.custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5);
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.8);
     border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .ssid-text {
-        max-width: 120px;
-    }
-
-    .bssid {
-        font-size: 10px;
-    }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 1);
 }
