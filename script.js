@@ -32,6 +32,7 @@ function initFirebase() {
   try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+    firebase.analytics(); // Initialize Analytics
     updateStatus('Connected', 'green');
     setupRealtimeListeners();
   } catch (error) {
