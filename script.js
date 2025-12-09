@@ -5,14 +5,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebas
 import { getDatabase, ref, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDJ4yFNi8MJ5W8fzCP2Tw3yVDam8IxyZuA",
-  authDomain: "esp32-scanner-810f5.firebaseapp.com",
-  databaseURL: "https://esp32-scanner-810f5-default-rtdb.firebaseio.com",
-  projectId: "esp32-scanner-810f5",
-  storageBucket: "esp32-scanner-810f5.firebasestorage.app",
-  messagingSenderId: "631684355138",
-  appId: "1:631684355138:web:073ca5067dca5b450149db",
-  measurementId: "G-MP6S370VDF"
+  apiKey: "AIzaSyD-t79JyFVE90z4jbk5gfE_E6sY96uj44A",
+  authDomain: "wifi-scan-dashbord-4de3e.firebaseapp.com",
+  databaseURL: "https://wifi-scan-dashbord-4de3e-default-rtdb.firebaseio.com",
+  projectId: "wifi-scan-dashbord-4de3e",
+  storageBucket: "wifi-scan-dashbord-4de3e.firebasestorage.app",
+  messagingSenderId: "462096576948",
+  appId: "1:462096576948:web:b7b96b3a1a0d7f358302e1",
+  measurementId: "G-R6XQCWH7FX"
 };
 
 // Initialize Firebase
